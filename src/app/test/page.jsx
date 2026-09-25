@@ -1,471 +1,394 @@
-"use client";
+'use client';
 
+import { useState, useEffect, useRef, Suspense } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
-import { useState } from "react";
-import { PT_Serif, PT_Sans } from "next/font/google";
+const TIME_PER_QUESTION = 10; // seconds
+const ADVANCE_DELAY = 1300; // ms to show feedback before moving on
 
-
-const display = PT_Serif({
-subsets: ["cyrillic", "latin"],
-weight: ["400", "700"],
-variable: "--font-display",
-});
-const body = PT_Sans({
-subsets: ["cyrillic", "latin"],
-weight: ["400", "700"],
-variable: "--font-body",
-});
-
-
-// Order matches the reference: Contact, Service, Portfolio, About, Home —
-// with Home styled as the active/current page.
-const NAV_LINKS = [
-  { href: "#contact", label: "Холбоо барих" },
-  { href: "#offer", label: "Үйлчилгээ" },
-  { href: "#faq", label: "Асуулт & хариулт" },
-  { href: "#about", label: "Бидний тухай" },
-  { href: "#home", label: "Нүүр", active: true },
-];
-
-
-const STATS = [
-  { value: "...", label: "Суралцагч" },
-  { value: "...", label: "Хичээл" },
-  { value: "...", label: "Туршлага" },
-  { value: "...", label: "Сэтгэл ханамж" },
-];
-
-
-const OFFERS = [
-  {
-title: "Үгийн сан",
-desc: "Кирилл монгол хэлэнд түгээмэл алдаатай бичигддэг журамласан 700 үгийг зөв бичиж сурах дасгал ажлууд",
-icon: "✎",
+const QUESTION_SETS = {
+  vocab: {
+    intro: {
+      title: 'Дараах үгсээс зөв бичигдсэн үгийг сонгоорой!',
+      subtitle: 'Асуулт бүрт 10 секунд өгөгдөнө.',
+    },
+    questions: [
+      {
+        id: 1,
+        prompt: 'Утга: Төрөлхөөс өгөгдсөн чадвар',
+        options: [
+          { id: 'А', text: 'Авъяас' },
+          { id: 'Б', text: 'Авьяас' },
+        ],
+        correctIndex: 0,
+      },
+      {
+        id: 2,
+        prompt: 'Утга: 7 дахь',
+        options: [
+          { id: 'А', text: 'Долдугаар' },
+          { id: 'Б', text: 'Долоодугаар' },
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: 3,
+        prompt: 'Утга: Их хэмжээний, том',
+        options: [
+          { id: 'А', text: 'Аварга' },
+          { id: 'Б', text: 'Аврага' },
+        ],
+        correctIndex: 0,
+      },
+      {
+        id: 4,
+        prompt: 'Утга: Олон давхарга бүхий хүнсний ногоо',
+        options: [
+          { id: 'А', text: 'Байцаа' },
+          { id: 'Б', text: 'Байцай' },
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: 5,
+        prompt: 'Утга: 8 хөлт далайн амьтан',
+        options: [
+          { id: 'А', text: 'Наймаалж' },
+          { id: 'Б', text: 'Наймалж' },
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: 6,
+        prompt: 'Утга: Хальт хөндөн ярих',
+        options: [
+          { id: 'А', text: 'Дурдах' },
+          { id: 'Б', text: 'Дурьдах' },
+        ],
+        correctIndex: 0,
+      },
+      {
+        id: 7,
+        prompt: 'Утга: Өнгөрснийг дурсан санах бодол',
+        options: [
+          { id: 'А', text: 'Дурдатгал' },
+          { id: 'Б', text: 'Дуртгал' },
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: 8,
+        prompt: 'Утга: Зөвлөгөө',
+        options: [
+          { id: 'А', text: 'Зааварчилгаа' },
+          { id: 'Б', text: 'Зааварчлагаа' },
+        ],
+        correctIndex: 0,
+      },
+      {
+        id: 9,
+        prompt: 'Утга: Уртлаг дугуй хэлбэр дүрс',
+        options: [
+          { id: 'А', text: 'Зууван' },
+          { id: 'Б', text: 'Зуйван' },
+        ],
+        correctIndex: 0,
+      },
+      {
+        id: 10,
+        prompt: 'Утга: Буддын шашны уншлагын ном',
+        options: [
+          { id: 'А', text: 'Маани' },
+          { id: 'Б', text: 'Маань' },
+        ],
+        correctIndex: 0,
+      },
+    ],
   },
-  {
-title: "Зөв бичих дүрэм",
-desc: "Гээгдэх гээгдэхгүй эгшгийн дүрэм, эгшигт болон заримдаг гийгүүлэгчийн дүрэм, зөөлний тэмдгийн дүрэм гэх мэт зөв бичгийн дүрмийн дасгалууд",
-icon: "📖",
-  },
-  {
-title: "Монгол бичиг",
-desc: "Хэл бичгийн элсэлтийн шалгалтанд орж ирдэг богино эхүүдийг кирилл бичигт хөрвүүлэх дасгалууд",
-icon: "🖋",
-  },
-  {
-title: "Хэлц үгс",
-desc: "Одоогийн нийгэмд цөөн хэрэглэгдэх өвөрмөц далд утгатай хэлц үгсийг танин мэдэх",
-icon: "💬",
-  },
-];
+};
 
-
-const FAQS = [
-  {
-q: "Төлбөртэй юу?",
-a: "Үгүй.",
-  },
-  {
-q: "Үр дүнтэй юу?",
-a: "Тийм ээ, өдөр бүр тогтмол дасгал хийсэн суралцагчид 4–6 долоо хоногийн дараа зөв бичих дүрэмдээ мэдэгдэхүйц ахиц гаргадаг.",
-  },
-  {
-q: "Гар утсанд ашиглах боломжтой юу?",
-a: "Тийм ээ, вэбсайт бүх төхөөрөмж дээр ажиллана",
-  },
-  {
-q: "Эх сурвалж баталгаатай юу?",
-a: "Тийм ээ, бид 2017 оны журамласан толь болон монгол хэлний мэргэжлийн багш нараас зөвлөгөө аван ажилладаг.",
-  },
-];
-
-
-const FOUNDERS = [
-  { name: "Н. Одбаяр" },
-  { name: "Л. Өсөх-Ирээдүй" },
-  { name: "У. Ундрам" },
-  { name: "С. Мичид" },
-  { name: "С. Төгөлдөр" },
-];
-
-
-function NavLink({ href, label, active, onClick }) {
+function LoadingScreen() {
   return (
-    <a
-      href={href}
-      onClick={onClick}
-      className={`relative pb-1 transition-colors duration-300 ease-out after:content-[''] after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:bg-[#2A4F73] after:transition-all after:duration-300 after:ease-out ${
-        active
-          ? "text-[#16283F] font-bold after:w-full"
-          : "text-[#2A4F73]/80 font-semibold hover:text-[#16283F] after:w-0 hover:after:w-full"
-      }`}
-    >
-      {label}
-    </a>
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 text-slate-800 font-serif">
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 rounded-full border-2 border-slate-300" />
+        <div className="absolute inset-0 rounded-full border-2 border-slate-700 border-t-transparent animate-spin" />
+      </div>
+      <p className="text-slate-600 text-sm font-medium tracking-wide">Ачаалж байна…</p>
+    </div>
   );
 }
 
+function QuizInner() {
+  const searchParams = useSearchParams();
+  const requestedType = searchParams.get('type');
+  const set = QUESTION_SETS[requestedType] ?? QUESTION_SETS.vocab;
 
-export default function Home() {
-const [menuOpen, setMenuOpen] = useState(false);
-const [openFaq, setOpenFaq] = useState(0);
+  const [stage, setStage] = useState('intro'); // 'intro' | 'quiz' | 'finished'
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
+  const advanceTimeout = useRef(null);
 
+  const currentQuestion = set.questions[currentIdx];
+  const isAnswered = selectedOption !== null || timeLeft === 0;
 
-const smoothScroll = (e, href) => {
-    e.preventDefault();
-setMenuOpen(false);
-    document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  // Countdown for the active question.
+  useEffect(() => {
+    if (stage !== 'quiz' || isAnswered) return undefined;
+    if (timeLeft === 0) return undefined;
+
+    const tick = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearTimeout(tick);
+  }, [stage, timeLeft, isAnswered]);
+
+  // Once answered (by pick or timeout), auto-advance.
+  useEffect(() => {
+    if (stage !== 'quiz' || !isAnswered) return undefined;
+
+    advanceTimeout.current = setTimeout(() => {
+      goToNext();
+    }, ADVANCE_DELAY);
+
+    return () => clearTimeout(advanceTimeout.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAnswered, stage]);
+
+  const goToNext = () => {
+    if (currentIdx + 1 < set.questions.length) {
+      setCurrentIdx((i) => i + 1);
+      setSelectedOption(null);
+      setTimeLeft(TIME_PER_QUESTION);
+    } else {
+      setStage('finished');
+    }
   };
 
+  const handleSkip = () => {
+    if (isAnswered) return;
+    setTimeLeft(0);
+  };
 
-return (
-<main
-className={`${display.variable} ${body.variable} min-h-screen bg-[#F5F8FB] text-[#212B36] overflow-x-hidden`}
-style={{ fontFamily: "var(--font-body)" }}
->
-<style jsx global>{`
-        html {
-          scroll-behavior: smooth;
-        }
-      `}</style>
+  const handleSelect = (index) => {
+    if (isAnswered) return;
+    setSelectedOption(index);
+    if (index === currentQuestion.correctIndex) {
+      setScore((s) => s + 100);
+    }
+  };
 
+  // ---------- Intro ----------
+  if (stage === 'intro') {
+    return (
+      <div className="min-h-screen bg-white text-slate-900 font-serif flex flex-col items-center justify-center px-6 relative overflow-hidden">
+        <div className="absolute top-1/4 -left-32 w-80 h-80 bg-slate-200/60 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-slate-300/60 rounded-full blur-[120px] pointer-events-none" />
 
-{/* HERO — framed card matching the reference composition */}
-<section id="home" className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16">
-<div className="relative rounded-[2.25rem] sm:rounded-[3rem] bg-gradient-to-br from-[#4E7FB0] to-[#1F3B5C] p-1.5 sm:p-2.5 overflow-hidden shadow-xl shadow-[#16283F]/20">
-{/* faint texture circles on the outer frame, echoing the reference background */}
-<svg
-className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
-preserveAspectRatio="xMidYMid slice"
->
-<circle cx="92%" cy="12%" r="120" fill="none" stroke="white" strokeWidth="1.5" />
-<circle cx="97%" cy="55%" r="80" fill="none" stroke="white" strokeWidth="1.5" />
-<circle cx="88%" cy="90%" r="150" fill="none" stroke="white" strokeWidth="1.5" />
-</svg>
+        <div className="max-w-xl w-full bg-slate-50 border border-slate-300 p-8 md:p-12 rounded-3xl shadow-xl text-center flex flex-col items-center z-10">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4 text-slate-800">
+            {set.intro.title}
+          </h1>
+          <p className="text-slate-600 text-sm md:text-base max-w-md mb-8 leading-relaxed">
+            {set.intro.subtitle}
+          </p>
 
+          <button
+            onClick={() => setStage('quiz')}
+            className="w-full sm:w-auto px-10 py-4 bg-slate-700 hover:bg-slate-800 active:scale-[0.98] text-white font-semibold rounded-2xl shadow-md transition-all duration-200 cursor-pointer"
+          >
+            Эхлэх
+          </button>
 
-<div className="relative bg-white rounded-[1.9rem] sm:rounded-[2.6rem] overflow-hidden">
-{/* decorative bulges so the card edge waves like the reference */}
-<div className="hidden sm:block absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white z-10" />
-<div className="hidden sm:block absolute -bottom-14 -right-14 w-56 h-56 rounded-full bg-gradient-to-br from-[#4E7FB0] to-[#1F3B5C]" />
+          <Link
+            href="/"
+            className="mt-6 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
+          >
+            ← Буцах
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
+  // ---------- Finished ----------
+  if (stage === 'finished') {
+    const maxScore = set.questions.length * 100;
+    const percentage = Math.round((score / maxScore) * 100);
 
-{/* NAV */}
-<nav className="relative z-20 flex items-center justify-between gap-6 lg:gap-8 px-6 sm:px-12 py-6 text-sm">
-<span className="font-bold text-xl text-[#16283F] font-[family-name:var(--font-display)] tracking-wide shrink-0">
-                СУДАРТАН
-</span>
-<div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center gap-6 lg:gap-8">
-{NAV_LINKS.map((link) => (
-<NavLink
-key={link.href}
-{...link}
-onClick={(e) => smoothScroll(e, link.href)}
-/>
-                ))}
-</div>
-<button className="hidden sm:inline-flex px-6 py-2.5 rounded-full bg-[#1F3B5C] hover:bg-[#16283F] text-white font-semibold transition-colors duration-300 shrink-0">
-                Нэвтрэх
-</button>
-<button
-aria-label="Цэс"
-className="sm:hidden text-2xl text-[#16283F] p-1"
-onClick={() => setMenuOpen(!menuOpen)}
->
-{menuOpen ? "✕" : "☰"}
-</button>
-</nav>
+    return (
+      <div className="min-h-screen bg-white text-slate-900 font-serif flex flex-col items-center justify-center px-6 relative overflow-hidden">
+        <div className="max-w-md w-full bg-slate-50 border border-slate-300 p-8 md:p-10 rounded-3xl shadow-xl text-center flex flex-col items-center z-10">
+          <h2 className="text-3xl font-bold text-slate-800 mb-2">Дасгал дууслаа!</h2>
 
+          <div className="w-full bg-white border border-slate-300 rounded-2xl p-6 mb-8 flex flex-col items-center justify-center shadow-sm">
+            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">
+              Нийт оноо
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-black text-slate-800">
+                {score}
+              </span>
+              <span className="text-slate-500 text-sm font-semibold">/ {maxScore}</span>
+            </div>
+            <span className="mt-3 text-xs font-medium px-3 py-1 rounded-full bg-slate-200 text-slate-700 border border-slate-300">
+              Гүйцэтгэл: {percentage}%
+            </span>
+          </div>
 
-{menuOpen && (
-<div className="sm:hidden relative z-20 px-6 pb-4 flex flex-col gap-1">
-{NAV_LINKS.map((link) => (
-<a
-key={link.href}
-href={link.href}
-onClick={(e) => smoothScroll(e, link.href)}
-className={`py-2.5 rounded-lg transition-colors duration-300 ${
-link.active
-                        ? "text-[#16283F] font-bold"
-                        : "text-[#2A4F73]/80 font-semibold hover:text-[#16283F] hover:bg-[#F1F6FA]"
-}`}
->
-{link.label}
-</a>
-                ))}
-<button className="mt-2 w-full py-2.5 rounded-full bg-[#1F3B5C] text-white font-semibold">
-                  Нэвтрэх
-</button>
-</div>
-            )}
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full"> 
+            <Link href="/" className="w-full">
+              <button className="w-full py-3.5 border border-slate-300 hover:bg-slate-200/50 active:scale-[0.98] rounded-xl font-semibold transition-all cursor-pointer text-sm text-slate-700">
+                Нүүр хуудас
+              </button>
+            </Link>
+            <button className="w-full py-3.5 bg-slate-700 hover:bg-slate-800 active:scale-[0.98] text-white rounded-xl font-semibold shadow-md transition-all cursor-pointer text-sm">
+              Бусад дасгалууд
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  // ---------- Quiz ----------
+  const timerRatio = timeLeft / TIME_PER_QUESTION;
+  const timerColorClass =
+    timerRatio > 0.6
+      ? 'bg-emerald-600'
+      : timerRatio > 0.3
+      ? 'bg-amber-600'
+      : 'bg-rose-600';
 
-{/* ILLUSTRATION + COPY */}
-<div className="relative z-10 grid lg:grid-cols-2 gap-10 items-center px-6 sm:px-12 pb-12 pt-2">
-<div className="flex justify-center lg:justify-start">
-{/* eslint-disable-next-line @next/next/no-img-element */}
-<img
-src="/Thesis-rafiki.svg"
-alt="Судалгаа, дипломын ажил бичиж буй оюутны зурган дүрслэл"
-className="w-full max-w-md"
-/>
-</div>
+  return (
+    <div className="min-h-screen bg-white text-slate-900 font-serif flex flex-col justify-between relative overflow-hidden">
+      {/* Header Navigation & Progress Bar */}
+      <header className="px-6 pt-6 max-w-2xl w-full mx-auto relative z-10">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <Link
+            href="/"
+            className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:border-slate-400 transition-all shadow-sm"
+            aria-label="Close"
+          >
+            ✕
+          </Link>
 
+          <span className="text-xs font-medium tracking-wider text-slate-600 bg-slate-100 px-3.5 py-1.5 rounded-full border border-slate-300">
+            {currentIdx + 1} / {set.questions.length}
+          </span>
 
-{/* TEXT PANEL */}
-<div className="space-y-5 text-center lg:text-left">
-<p className="text-3xl sm:text-4xl font-light text-[#3B6EA5] font-[family-name:var(--font-display)]">
-                  Хэлний дархлаагаа
-</p>
-<h1 className="text-4xl sm:text-5xl font-bold uppercase text-[#16283F] -mt-3 font-[family-name:var(--font-display)]">
-                  бэхжүүлцгээе.
-</h1>
-<p className="text-[#51606F] leading-relaxed max-w-md mx-auto lg:mx-0">
-                  Хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц дасгалыг агуулсан Монголын анхны сайт.
-</p>
-<div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-2">
-<button className="px-8 py-3.5 bg-[#1F3B5C] hover:bg-[#16283F] text-white font-semibold rounded-full transition-colors duration-300">
-                    Эхлэх
-</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
+          {/* Skip Button on the Top Right Edge */}
+          <button
+            onClick={handleSkip}
+            disabled={isAnswered}
+            className="h-9 px-4 text-xs font-semibold rounded-xl bg-slate-100 border border-slate-300 text-slate-700 hover:bg-slate-200 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
+          >
+            Алгасах
+          </button>
+        </div>
 
+        {/* Shrinking Line Timer located directly beneath the header */}
+        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+          <div
+            className={`h-full ${timerColorClass} transition-all duration-1000 ease-linear`}
+            style={{ width: `${timerRatio * 100}%` }}
+          />
+        </div>
+      </header>
 
-{/* ABOUT */}
-<section id="about" className="bg-white border-y border-[#DCE7F2]">
-<div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-14 items-center">
-<div className="space-y-5">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
-              Бидний тухай
-</h2>
-<p className="text-[#51606F] leading-relaxed max-w-lg">
-              Судартан нь монгол хэлний зөв бичих дүрэм, үгийн сан, үндэсний монгол бичгийг нэг дороос сурах боломжийг олгодог платформ юм. Бид
-              монгол хэлний багш нартай хамтран хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц талбарыг үүсгэлээ. 
-</p>
-<p className="text-[#51606F] leading-relaxed max-w-lg">
-              Цаг ирэх тусам хэл бичгийн шалгалтын оноо буурч, жил бүр 5000-10000 сурагч хэл бичгийн элсэлтийн шалгалтдаа 
-              400-аас доош оноо авч их сургуульд элсэн орох боломжоо алдаж байна. Эдгээр болон бусад хүүхдүүдэд хэл бичгийн 
-              элсэлтийн шалгалтандаа бэлдэж сайжрахад нь тусалж, цаашлаад монголын соёлын амин сүнс нь болсон эх хэлийнхээ ач 
-              холбогдолыг танин мэдүүлэх нь бидний зорилго билээ.
-</p>
-</div>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-6 max-w-2xl w-full mx-auto relative z-10">
+        <div className="w-full bg-slate-50 border border-slate-300 p-6 md:p-10 rounded-3xl shadow-xl transition-all">
+          {currentQuestion.prompt && (
+            <div className="mb-8 text-center">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">
+                Утга:
+              </span>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 leading-snug">
+                {currentQuestion.prompt.replace(/^Утга:\s*/, '')}
+              </h1>
+            </div>
+          )}
 
+          {/* Answer Options */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {currentQuestion.options.map((opt, i) => {
+              const isSelected = selectedOption === i;
+              const isCorrectOpt = i === currentQuestion.correctIndex;
 
-<div className="grid grid-cols-2 gap-5">
-{STATS.map((stat) => (
-<div
-key={stat.label}
-className="rounded-2xl border border-[#DCE7F2] bg-[#F5F8FB] p-6"
->
-<p className="text-3xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
-{stat.value}
-</p>
-<p className="text-[#6B7B8C] mt-1 text-sm">{stat.label}</p>
-</div>
-            ))}
-</div>
-</div>
-</section>
+              let style =
+                'bg-white border-slate-300 hover:border-slate-500 hover:bg-slate-100/50 text-slate-800';
+              let badgeStyle = 'bg-slate-200 text-slate-700 border-slate-300';
 
+              if (isAnswered) {
+                if (isCorrectOpt) {
+                  style =
+                    'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm';
+                  badgeStyle = 'bg-emerald-600 text-white border-emerald-600 font-bold';
+                } else if (isSelected) {
+                  style =
+                    'bg-rose-50 border-rose-500 text-rose-900 shadow-sm';
+                  badgeStyle = 'bg-rose-600 text-white border-rose-600 font-bold';
+                } else {
+                  style = 'bg-slate-100 border-slate-200 text-slate-400 opacity-50';
+                  badgeStyle = 'bg-slate-200 text-slate-400 border-slate-200';
+                }
+              }
 
-{/* OFFER */}
-<section id="offer" className="max-w-7xl mx-auto px-6 py-20">
-<div className="max-w-lg mb-12">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
-            Бидний үйлчилгээ
-</h2>
-<p className="text-[#51606F] mt-3 leading-relaxed">
-            Дөрвөн үндсэн чиглэлээр эх хэлнийхээ мэдлэгийг системтэйгээр
-            дээшлүүлээрэй.
-</p>
-</div>
-
-
-<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-{OFFERS.map((offer) => (
-<div
-key={offer.title}
-className="rounded-2xl border border-[#DCE7F2] p-6 hover:border-[#4E7FB0] transition-colors duration-300"
->
-<span className="w-11 h-11 rounded-xl bg-[#1F3B5C] text-[#DCE7F2] flex items-center justify-center text-lg mb-5">
-{offer.icon}
-</span>
-<h3 className="font-bold text-[#16283F] text-lg mb-2 font-[family-name:var(--font-display)]">
-{offer.title}
-</h3>
-<p className="text-[#57697A] text-sm leading-relaxed">
-{offer.desc}
-</p>
-</div>
-          ))}
-</div>
-</section>
-
-
-{/* FAQ */}
-<section id="faq" className="bg-white border-y border-[#DCE7F2]">
-<div className="max-w-3xl mx-auto px-6 py-20">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)] mb-12">
-            Асуулт & хариулт
-</h2>
-
-
-<div className="divide-y divide-[#DCE7F2] border-t border-b border-[#DCE7F2]">
-{FAQS.map((item, idx) => {
-const isOpen = openFaq === idx;
-return (
-<div key={item.q}>
-<button
-onClick={() => setOpenFaq(isOpen ? -1 : idx)}
-className="w-full flex items-center justify-between gap-4 py-5 text-left"
->
-<span className="font-semibold text-[#16283F]">
-{item.q}
-</span>
-<span
-className={`shrink-0 w-7 h-7 rounded-full border border-[#C7D9EA] flex items-center justify-center text-[#1F3B5C] transition-transform duration-300 ${
-isOpen ? "rotate-45" : ""
-}`}
->
-                      +
-</span>
-</button>
-{isOpen && (
-<p className="text-[#57697A] leading-relaxed pb-5 pr-10">
-{item.a}
-</p>
-                  )}
-</div>
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => handleSelect(i)}
+                  disabled={isAnswered}
+                  className={`p-5 rounded-2xl border text-left flex items-center gap-4 min-h-[76px] transition-all duration-200 transform active:scale-[0.99] cursor-pointer ${style}`}
+                >
+                  <span
+                    className={`w-9 h-9 shrink-0 rounded-xl border flex items-center justify-center text-xs font-semibold transition-all ${badgeStyle}`}
+                  >
+                    {opt.id}
+                  </span>
+                  <span className="text-base font-medium leading-snug">{opt.text}</span>
+                </button>
               );
             })}
-</div>
-</div>
-</section>
+          </div>
 
+          {/* Feedback Section */}
+          <div className="min-h-[28px] mt-6 flex items-center justify-center">
+            {isAnswered && (
+              <p
+                className={`text-center text-xs font-semibold tracking-wide transition-all ${
+                  selectedOption === null
+                    ? 'text-amber-700'
+                    : selectedOption === currentQuestion.correctIndex
+                    ? 'text-emerald-700'
+                    : 'text-rose-700'
+                }`}
+              >
+                {selectedOption === null
+                  ? `⏱ Хариулт хоосон! Зөв хариулт: ${currentQuestion.options[currentQuestion.correctIndex].text}`
+                  : selectedOption === currentQuestion.correctIndex
+                  ? '✓ Зөв хариуллаа!'
+                  : `✕ Зөв хариулт: ${currentQuestion.options[currentQuestion.correctIndex].text}`}
+              </p>
+            )}
+          </div>
+        </div>
+      </main>
 
-{/* ҮҮСГЭН БАЙГУУЛАГЧИД */}
-<section id="founders" className="max-w-7xl mx-auto px-6 py-20">
-<div className="max-w-lg mb-12 mx-auto text-center">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
-            Үүсгэн байгуулагчид
-</h2>
-</div>
+      {/* Footer */}
+      <footer className="py-4 text-center text-xs text-slate-500 font-medium">
+        Зөв бичих дүрэм
+      </footer>
+    </div>
+  );
+}
 
-
-<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
-{FOUNDERS.map((founder) => (
-  <div key={founder.name} className="flex flex-col items-center text-center">
-    {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img
-      src={undefined}   // ← replace with real image path later, e.g. "/founders/odbayar.jpg"
-      alt={founder.name}
-      className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-[#DCE7F2] bg-[#F5F8FB] mb-4"
-    />
-    <p className="font-semibold text-[#16283F] font-[family-name:var(--font-display)]">
-      {founder.name}
-    </p>
-  </div>
-))}
-</div>
-</section>
-
-
-{/* CONTACT */}
-<section id="contact" className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-14">
-<div className="space-y-6">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
-            Холбоо барих
-</h2>
-<p className="text-[#51606F] leading-relaxed max-w-md">
-            Асуулт, санал хүсэлт байвал бидэнтэй чөлөөтэй холбогдоорой.
-            Ажлын өдрүүдэд бид 24 цагийн дотор хариу өгөхийг зорьдог.
-</p>
-
-
-<div className="space-y-4 pt-2">
-<div className="flex items-center gap-3">
-<span className="w-10 h-10 rounded-full bg-[#F1F6FA] flex items-center justify-center">
-                ✉️
-</span>
-<span className="text-[#212B36]">info@sudartan.mn</span>
-</div>
-<div className="flex items-center gap-3">
-<span className="w-10 h-10 rounded-full bg-[#F1F6FA] flex items-center justify-center">
-                📞
-</span>
-<span className="text-[#212B36]">+976 7000 1234</span>
-</div>
-<div className="flex items-center gap-3">
-<span className="w-10 h-10 rounded-full bg-[#F1F6FA] flex items-center justify-center">
-                📍
-</span>
-<span className="text-[#212B36]">
-                Сүхбаатар дүүрэг, Улаанбаатар хот
-</span>
-</div>
-</div>
-</div>
-
-
-<form className="space-y-4 bg-white border border-[#DCE7F2] rounded-2xl p-7">
-<div>
-<label className="block text-sm font-semibold text-[#16283F] mb-1.5">
-              Нэр
-</label>
-<input
-type="text"
-placeholder="Таны нэр"
-className="w-full px-4 py-3 rounded-xl border border-[#DCE7F2] bg-[#F5F8FB] outline-none focus:border-[#3B6EA5] transition-colors duration-300"
-/>
-</div>
-<div>
-<label className="block text-sm font-semibold text-[#16283F] mb-1.5">
-              И-мэйл
-</label>
-<input
-type="email"
-placeholder="tanii@imeil.mn"
-className="w-full px-4 py-3 rounded-xl border border-[#DCE7F2] bg-[#F5F8FB] outline-none focus:border-[#3B6EA5] transition-colors duration-300"
-/>
-</div>
-<div>
-<label className="block text-sm font-semibold text-[#16283F] mb-1.5">
-              Зурвас
-</label>
-<textarea
-rows={4}
-placeholder="Бидэнд юу хэлэхийг хүсэж байна вэ?"
-className="w-full px-4 py-3 rounded-xl border border-[#DCE7F2] bg-[#F5F8FB] outline-none focus:border-[#3B6EA5] transition-colors duration-300 resize-none"
-/>
-</div>
-<button
-type="submit"
-className="w-full py-3.5 bg-[#1F3B5C] hover:bg-[#16283F] text-white font-semibold rounded-xl transition-colors duration-300"
->
-            Илгээх
-</button>
-</form>
-</section>
-
-
-{/* FOOTER */}
-<footer className="border-t border-[#DCE7F2] bg-white py-8">
-<div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-[#6B7B8C] text-sm font-medium">
-<p>© {new Date().getFullYear()} Судартан. Бүх эрх хуулиар хамгаалагдсан.</p>
-<div className="flex gap-6">
-<a href="#about" onClick={(e) => smoothScroll(e, "#about")} className="hover:text-[#1F3B5C] transition-colors duration-300">
-              Бидний тухай
-</a>
-<a href="#contact" onClick={(e) => smoothScroll(e, "#contact")} className="hover:text-[#1F3B5C] transition-colors duration-300">
-              Холбоо барих
-</a>
-</div>
-</div>
-</footer>
-</main>
+export default function QuizPage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <QuizInner />
+    </Suspense>
   );
 }

@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { PT_Serif, PT_Sans } from "next/font/google";
+import { useRouter } from "next/navigation";
 
 
 const display = PT_Serif({
@@ -117,6 +118,11 @@ setMenuOpen(false);
     document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const router = useRouter();
+
+  const goToOptions = () => {
+    router.push('/options');
+  }
 
 return (
 <main
@@ -224,7 +230,7 @@ className="w-full max-w-md"
                   Хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц дасгалыг агуулсан Монголын анхны сайт.
 </p>
 <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-2">
-<button className="px-8 py-3.5 bg-[#1F3B5C] hover:bg-[#16283F] text-white font-semibold rounded-full transition-colors duration-300">
+<button className="px-8 py-3.5 bg-[#1F3B5C] hover:bg-[#16283F] text-white font-semibold rounded-full transition-colors duration-300 " onClick={goToOptions}>
                     Эхлэх
 </button>
 </div>

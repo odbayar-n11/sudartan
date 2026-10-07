@@ -145,6 +145,8 @@ function Sheep({ className = "", label }) {
   );
 }
 
+
+
 const ACCESSORIES = {
   pencil: <path d="M44 55l1-4 7-7 3 3-7 7z" fill="#fff" />,
   book: <path d="M43.5 45.5H49v10h-5.500zM51 45.5h5.500v10H51z" fill="#fff" />,
@@ -282,6 +284,7 @@ export default function Home() {
     router.push("/options");
   };
 
+
   return (
     <main
       className={`${display.variable} ${body.variable} ${irishGrover.variable} min-h-screen bg-[#FDFCFC] text-[#0f172a] overflow-x-hidden`}
@@ -346,7 +349,7 @@ export default function Home() {
             <div className="flex items-center gap-4">
   {/* Бүртгүүлэх (Sign Up) */}
   <Link 
-    href="/sign-up" 
+    href="/signup" 
     className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
   >
     Бүртгүүлэх
@@ -354,7 +357,7 @@ export default function Home() {
 
   {/* Нэвтрэх (Sign In) */}
   <Link 
-    href="/sign-in" 
+    href="/signin" 
     className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
   >
     Нэвтрэх
@@ -413,7 +416,7 @@ export default function Home() {
       {/* Button now on the left */}
       <div className="pt-6 flex items-center gap-5">
         <button
-          className="px-7 py-3 bg-[#0284c7] hover:bg-[#00a5600] text-white font-extrabold  rounded-full shadow-2xl hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"
+          className="px-7 py-3 bg-[#0284c7] hover:bg-[#00a5600] text-white font-extrabold  rounded-full shadow-2xl hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] mt-4"
           onClick={goToOptions}
         >
           Туршилтын дасгал

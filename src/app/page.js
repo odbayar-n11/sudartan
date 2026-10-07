@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Nunito, Irish_Grover, Caveat} from "next/font/google";
+import { Nunito, Irish_Grover, } from "next/font/google";
 import { useRouter } from "next/navigation";
 
 const display = Nunito({
@@ -21,14 +21,6 @@ const irishGrover = Irish_Grover({
   subsets: ["latin"],
   variable: "--font-irish",
 });
-
-const caveat = Caveat({
-  weight: ["400"],
-  subsets: ["latin", "cyrillic"], 
-  variable: "--font-caveat",
-});
-
-
 
 // Order matches the reference: Contact, Service, Portfolio, About, Home —
 // with Home styled as the active/current page.
@@ -236,17 +228,19 @@ function Clouds({ fill, back, accent, flip = false, className = "", children }) 
       <svg
         viewBox="0 0 1440 200"
         className="relative block h-auto max-w-none w-[max(100%,1000px)] left-1/2 -translate-x-1/2"
-        style={{ filter: "drop-shadow(0 -3px 6px rgba(14,165,233,0.15))" }}
+        style={{
+          filter: "drop-shadow(0 -3px 6px white blur(1.2px)",
+        }}
       >
         {back && (
-          <g>
+          <g opacity="0.75">
             {BACK.map(([x, y, r, a]) => (
               <circle key={x} cx={x} cy={y} r={r} fill={a && accent ? accent : back} />
             ))}
             <rect x="0" y="130" width="1440" height="70" fill={back} />
           </g>
         )}
-        <g fill={fill}>
+        <g fill={fill} opacity="1">
           {FRONT.map(([x, y, r]) => <circle key={x} cx={x} cy={y} r={r} />)}
           <rect x="0" y="150" width="1440" height="50" />
         </g>
@@ -266,22 +260,6 @@ function SheepAvatar({ bg, className = "", delay = "0s" }) {
     >
       <SheepHead className="w-4/5 h-4/5" />
     </span>
-  );
-}
-
-function NavLink({ href, label, active, onClick }) {
-  return (
-    <a
-      href={href}
-      onClick={onClick}
-      className={`relative pb-1 transition-colors duration-300 ease-out after:content-[''] after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:bg-[#38bdf8] after:transition-all after:duration-300 after:ease-out ${
-        active
-          ? "text-white font-bold after:w-full"
-          : "text-[#e0f2fe]/80 font-semibold hover:text-white after:w-0 hover:after:w-full"
-      }`}
-    >
-      {label}
-    </a>
   );
 }
 
@@ -323,28 +301,37 @@ export default function Home() {
         }
       `}</style>
 
-{/* HERO — Updated with Custom Hero Image */}
+      {/* HERO — Fullscreen Crystal Clear Image Background */}
       <section
         id="home"
-        className="relative min-h-screen flex flex-col overflow-hidden bg-[#f4f1ea]" // Light off-white background matching poster texture
+        className="relative min-h-screen flex flex-col justify-between overflow-hidden bg-[#f4f1ea]"
       >
-        <div className="relative z-30 w-full max-w-7xl mx-auto px-6 sm:px-12">
-          {/* NAV with aligned Logo + Horizon */}
+        {/* Full-screen Background Image — Sharp and Unblurred, full aspect ratio */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/images/hero.jpg"
+            alt="Hero Background"
+            className="w-full h-full object-cover object-center"
+          />
+        </div>
+
+        {/* HERO HEADER */}
+        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-12">
           <nav className="relative flex items-center justify-between gap-6 lg:gap-8 py-6 text-sm">
-            <div className="flex items-center gap-2.5 shrink-0">
-              <img src="/images/logo.png" className="w-10 h-10 object-contain" alt="Sudartan Logo" />
-              <span className="font-extrabold text-2xl text-[#0284c7] font-[family-name:var(--font-display)] tracking-wide leading-none">
+            <div className="flex items-center gap-2.5 shrink-0 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-md border border-white/60">
+              <img src="/images/logo.png" className="w-8 h-8 object-contain" alt="Sudartan Logo" />
+              <span className="font-extrabold  text-[#0284c7] font-[family-name:var(--font-display)] tracking-wide leading-none">
                 СУДАРТАН
               </span>
             </div>
 
-            <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center gap-6 lg:gap-8">
+            <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center gap-6 lg:gap-8 bg-white/85 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/80 shadow-md">
               {NAV_ORDER.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
                   onClick={(e) => smoothScroll(e, link.href)}
-                  className={`relative pb-1 transition-colors duration-300 ease-out ${
+                  className={`relative pb-0.5 transition-colors duration-300 ease-out ${
                     link.active
                       ? "text-[#0284c7] font-bold"
                       : "text-[#334155] font-semibold hover:text-[#0284c7]"
@@ -355,13 +342,13 @@ export default function Home() {
               ))}
             </div>
 
-            <button className="hidden sm:inline-flex px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-md">
+            <button className="hidden sm:inline-flex px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg">
               Нэвтрэх
             </button>
 
             <button
               aria-label="Цэс"
-              className="sm:hidden text-2xl text-[#0284c7] p-1"
+              className="sm:hidden text-2xl text-[#0284c7] p-2 bg-white/80 rounded-full shadow-md"
               onClick={() => setMenuOpen(!menuOpen)}
             >
               {menuOpen ? "✕" : "☰"}
@@ -391,58 +378,43 @@ export default function Home() {
           )}
         </div>
 
-        {/* HERO CONTENT CONTAINER */}
-        <div
-          className="relative z-20 flex-1 flex flex-col items-center justify-center text-center px-4 pt-4"
-          style={{ paddingBottom: `calc(${CLOUD_H} + 5rem)` }}
+        {/* HERO CENTER CONTENT */}
+<div
+  className="relative z-20 flex-1 flex flex-col items-center justify-end text-center px-4 pb-12"
+  style={{ paddingBottom: `calc(${CLOUD_H} + 0.5rem)` }}
+>
+  <div className="relative w-full max-w-7xl mx-auto">
+    {/* Left column – first 6/10 of the width, flex-col */}
+    <div className="w-[60%] max-w-xl flex flex-col items-start text-left">
+      <img
+        src="/images/texttt.png"
+        alt=""
+        className="w-full h-auto mb-4"
+      />
+      <p className="text-xl sm:text-2xl font-extrabold text-[#0a5600] leading-relaxed drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)] ">
+        Хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц дасгалыг агуулсан Монголын анхны сайт.
+      </p>
+
+      {/* Button now on the left */}
+      <div className="pt-6 flex items-center gap-5">
+        <button
+          className="px-7 py-3 bg-[#0284c7] hover:bg-[#00a5600] text-white font-extrabold  rounded-full shadow-2xl hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"
+          onClick={goToOptions}
         >
-          <div className="relative max-w-4xl mx-auto w-full">
-            {/* Bubbly Sheep Avatars around the Poster Graphic */}
-            <SheepAvatar bg="#e0f2fe" className="-top-6 -right-2 sm:-top-8 sm:-right-8 w-16 h-16 sm:w-24 sm:h-24 shadow-lg z-30" />
-            <SheepAvatar bg="#bae6fd" delay="-1.5s" className="top-1/3 -left-3 sm:-left-10 w-14 h-14 sm:w-20 sm:h-20 shadow-lg z-30" />
-            <SheepAvatar bg="#ffffff" delay="-3s" className="-bottom-8 left-4 sm:left-12 w-16 h-16 sm:w-24 sm:h-24 shadow-lg z-30" />
+          Туршилтын дасгал
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-            {/* Poster Image Replacement */}
-            <div className="relative w-full overflow-hidden rounded-3xl shadow-xl border border-black/5 bg-white">
-              <img
-                src="/images/hero.png"
-                alt="Монгол хэлийг хашраацгаая"
-                className="w-full h-auto object-cover max-h-[520px]"
-              />
-            </div>
-
-            {/* Subtitle Badge */}
-            <p className="relative z-30 text-lg sm:text-xl font-bold text-[#0369a1] leading-snug max-w-lg mx-auto mt-6 bg-white/80 backdrop-blur-md py-2.5 px-6 rounded-full border border-[#38bdf8]/30 shadow-sm">
-              Хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц дасгалыг агуулсан Монголын анхны сайт.
-            </p>
-
-            {/* CTA Button */}
-            <div className="relative z-30 flex justify-center pt-6">
-              <button
-                className="px-10 py-4 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-lg rounded-full shadow-xl hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"
-                onClick={goToOptions}
-              >
-                Эхлэх
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Clouds footer with Sheep */}
+        {/* Clouds footer — lowered + watercolor treatment, no sheep */}
         <Clouds
           fill="#FDFCFC"
           back="#bae6fd"
           accent="#7dd3fc"
-          className="absolute bottom-0 inset-x-0 z-10 -mb-px"
-        >
-          <div className="absolute left-1/2 bottom-[55%] -translate-x-1/2 w-full max-w-4xl flex items-end justify-center gap-3 sm:gap-8 px-4">
-            <Sheep className="sheep-float w-16 sm:w-24 -mb-2" />
-            <Sheep className="sheep-float w-24 sm:w-36" />
-            <Sheep className="sheep-float w-32 sm:w-48 z-10" />
-            <Sheep className="sheep-float w-20 sm:w-32 -mb-1" />
-            <Sheep className="sheep-float w-16 sm:w-24 -mb-3" />
-          </div>
-        </Clouds>
+          className="absolute bottom-0 inset-x-0 z-10 -mb-px translate-y-16"
+        />
       </section>
 
       {/* ABOUT */}
@@ -454,12 +426,12 @@ export default function Home() {
             </h2>
             <p className="text-[#475569] leading-relaxed max-w-lg">
               Судартан нь монгол хэлний зөв бичих дүрэм, үгийн сан, үндэсний монгол бичгийг нэг дороос сурах боломжийг олгодог платформ юм. Бид
-              монгол хэлний багш нартай хамтран хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц талбарыг үүсгэлээ. 
+              монгол хэлний багш нартай хамтран хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц талбарыг үүсгэлээ.
             </p>
             <p className="text-[#475569] leading-relaxed max-w-lg">
-              Цаг ирэх тусам хэл бичгийн шалгалтын оноо буурч, жил бүр 5000-10000 сурагч хэл бичгийн элсэлтийн шалгалтдаа 
-              400-аас доош оноо авч их сургуульд элсэн орох боломжоо алдаж байна. Эдгээр болон бусад хүүхдүүдэд хэл бичгийн 
-              элсэлтийн шалгалтандаа бэлдэж сайжрахад нь тусалж, цаашлаад монголын соёлын амин сүнс нь болсон эх хэлийнхээ ач 
+              Цаг ирэх тусам хэл бичгийн шалгалтын оноо буурч, жил бүр 5000-10000 сурагч хэл бичгийн элсэлтийн шалгалтдаа
+              400-аас доош оноо авч их сургуульд элсэн орох боломжоо алдаж байна. Эдгээр болон бусад хүүхдүүдэд хэл бичгийн
+              элсэлтийн шалгалтандаа бэлдэж сайжрахад нь тусалж, цаашлаад монголын соёлын амин сүнс нь болсон эх хэлийнхээ ач
               холбогдолыг танин мэдүүлэх нь бидний зорилго билээ.
             </p>
           </div>
@@ -499,15 +471,15 @@ export default function Home() {
             {OFFERS.map((offer) => (
               <div
                 key={offer.title}
-                className="rounded-[30px] bg-white/10 backdrop-blur-md border border-white/20 p-6 hover:border-white/60 transition-colors duration-300"
+                className="rounded-[30px] bg-[#ffffff] backdrop-blur-md border border-white/20 p-6 hover:border-white/60 transition-colors duration-300"
               >
-                <span className="w-16 h-16 rounded-full bg-[#0369a1] flex items-center justify-center mb-5 shadow-inner">
+                <span className="w-16 h-16 rounded-full bg-[#01993e] flex items-center justify-center mb-5 shadow-inner">
                   <SheepHead acc={offer.icon} className="w-12 h-12" />
                 </span>
-                <h3 className="font-extrabold text-white text-xl mb-2 font-[family-name:var(--font-display)]">
+                <h3 className="font-extrabold text-[#0a5600] text-xl mb-2 font-[family-name:var(--font-display)]">
                   {offer.title}
                 </h3>
-                <p className="text-[#e0f2fe] text-sm leading-relaxed">
+                <p className="text-[#000000] text-sm leading-relaxed">
                   {offer.desc}
                 </p>
               </div>
@@ -546,7 +518,7 @@ export default function Home() {
                       {item.q}
                     </span>
                     <span
-                      className={`shrink-0 w-8 h-8 rounded-full bg-[#38bdf8] flex items-center justify-center font-bold text-white transition-transform duration-300 ${
+                      className={`shrink-0 w-8 h-8 rounded-full bg-[#42db00] flex items-center justify-center font-bold text-white transition-transform duration-300 ${
                         isOpen ? "rotate-45" : ""
                       }`}
                     >
@@ -578,7 +550,6 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
             {FOUNDERS.map((founder, i) => (
               <div key={founder.name} className="flex flex-col items-center text-center">
-                {/* LARGER ROUND PICTURES: w-36 h-36 sm:w-44 sm:h-44 */}
                 <span
                   className="w-36 h-36 sm:w-44 sm:h-44 rounded-full border-4 border-white shadow-xl flex items-center justify-center mb-4 transform hover:scale-105 transition-transform duration-300"
                   style={{ background: AVATAR_BG[i % AVATAR_BG.length] }}

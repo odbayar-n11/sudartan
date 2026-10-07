@@ -1,21 +1,33 @@
 "use client";
 
-
 import { useState } from "react";
-import { PT_Serif, PT_Sans } from "next/font/google";
+import { Nunito, Irish_Grover, Caveat} from "next/font/google";
 import { useRouter } from "next/navigation";
 
+const display = Nunito({
+  subsets: ["cyrillic", "latin"],
+  weight: ["800", "900"],
+  variable: "--font-display",
+});
 
-const display = PT_Serif({
-subsets: ["cyrillic", "latin"],
-weight: ["400", "700"],
-variable: "--font-display",
+const body = Nunito({
+  subsets: ["cyrillic", "latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-body",
 });
-const body = PT_Sans({
-subsets: ["cyrillic", "latin"],
-weight: ["400", "700"],
-variable: "--font-body",
+
+const irishGrover = Irish_Grover({
+  weight: ["400"],
+  subsets: ["latin"],
+  variable: "--font-irish",
 });
+
+const caveat = Caveat({
+  weight: ["400"],
+  subsets: ["latin", "cyrillic"], 
+  variable: "--font-caveat",
+});
+
 
 
 // Order matches the reference: Contact, Service, Portfolio, About, Home —
@@ -28,7 +40,6 @@ const NAV_LINKS = [
   { href: "#home", label: "Нүүр", active: true },
 ];
 
-
 const STATS = [
   { value: "...", label: "Суралцагч" },
   { value: "...", label: "Хичээл" },
@@ -36,50 +47,48 @@ const STATS = [
   { value: "...", label: "Сэтгэл ханамж" },
 ];
 
-
+// `icon` is the sheep's accessory
 const OFFERS = [
   {
-title: "Үгийн сан",
-desc: "Кирилл монгол хэлэнд түгээмэл алдаатай бичигддэг журамласан 700 үгийг зөв бичиж сурах дасгал ажлууд",
-icon: "✎",
+    title: "Үгийн сан",
+    desc: "Кирилл монгол хэлэнд түгээмэл алдаатай бичигддэг журамласан 700 үгийг зөв бичиж сурах дасгал ажлууд",
+    icon: "pencil",
   },
   {
-title: "Зөв бичих дүрэм",
-desc: "Гээгдэх гээгдэхгүй эгшгийн дүрэм, эгшигт болон заримдаг гийгүүлэгчийн дүрэм, зөөлний тэмдгийн дүрэм гэх мэт зөв бичгийн дүрмийн дасгалууд",
-icon: "📖",
+    title: "Зөв бичих дүрэм",
+    desc: "Гээгдэх гээгдэхгүй эгшгийн дүрэм, эгшигт болон заримдаг гийгүүлэгчийн дүрэм, зөөлний тэмдгийн дүрэм гэх мэт зөв бичгийн дүрмийн дасгалууд",
+    icon: "book",
   },
   {
-title: "Монгол бичиг",
-desc: "Хэл бичгийн элсэлтийн шалгалтанд орж ирдэг богино эхүүдийг кирилл бичигт хөрвүүлэх дасгалууд",
-icon: "🖋",
+    title: "Монгол бичиг",
+    desc: "Хэл бичгийн элсэлтийн шалгалтанд орж ирдэг богино эхүүдийг кирилл бичигт хөрвүүлэх дасгалууд",
+    icon: "quill",
   },
   {
-title: "Хэлц үгс",
-desc: "Одоогийн нийгэмд цөөн хэрэглэгдэх өвөрмөц далд утгатай хэлц үгсийг танин мэдэх",
-icon: "💬",
+    title: "Хэлц үгс",
+    desc: "Одоогийн нийгэмд цөөн хэрэглэгдэх өвөрмөц далд утгатай хэлц үгсийг танин мэдэх",
+    icon: "bubble",
   },
 ];
-
 
 const FAQS = [
   {
-q: "Төлбөртэй юу?",
-a: "Үгүй.",
+    q: "Төлбөртэй юу?",
+    a: "Үгүй.",
   },
   {
-q: "Үр дүнтэй юу?",
-a: "Тийм ээ, өдөр бүр тогтмол дасгал хийсэн суралцагчид 4–6 долоо хоногийн дараа зөв бичих дүрэмдээ мэдэгдэхүйц ахиц гаргадаг.",
+    q: "Үр дүнтэй юу?",
+    a: "Тийм ээ, өдөр бүр тогтмол дасгал хийсэн суралцагчид 4–6 долоо хоногийн дараа зөв бичих дүрэмдээ мэдэгдэхүйц ахиц гаргадаг.",
   },
   {
-q: "Гар утсанд ашиглах боломжтой юу?",
-a: "Тийм ээ, вэбсайт бүх төхөөрөмж дээр ажиллана",
+    q: "Гар утсанд ашиглах боломжтой юу?",
+    a: "Тийм ээ, вэбсайт бүх төхөөрөмж дээр ажиллана",
   },
   {
-q: "Эх сурвалж баталгаатай юу?",
-a: "Тийм ээ, бид 2017 оны журамласан толь болон монгол хэлний мэргэжлийн багш нараас зөвлөгөө аван ажилладаг.",
+    q: "Эх сурвалж баталгаатай юу?",
+    a: "Тийм ээ, бид 2017 оны журамласан толь болон монгол хэлний мэргэжлийн багш нараас зөвлөгөө аван ажилладаг.",
   },
 ];
-
 
 const FOUNDERS = [
   { name: "Н. Одбаяр" },
@@ -89,16 +98,186 @@ const FOUNDERS = [
   { name: "С. Төгөлдөр" },
 ];
 
+const AVATAR_BG = ["#38BDF8", "#0284C7", "#0ea5e9", "#7dd3fc", "#0369a1"];
+
+/* ───────────── Sheep (mascot) ───────────── */
+
+const BODY = [
+  [40, 58, 24], [62, 40, 27], [90, 36, 28], [115, 46, 25],
+  [50, 76, 22], [78, 74, 26], [104, 72, 24],
+];
+
+function Sheep({ className = "", label }) {
+  return (
+    <svg
+      viewBox="0 0 160 120"
+      className={className}
+      role={label ? "img" : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
+    >
+      <g fill="#1e293b">
+        <rect x="52" y="86" width="9" height="26" rx="4.5" />
+        <rect x="72" y="88" width="9" height="24" rx="4.5" />
+        <rect x="94" y="88" width="9" height="24" rx="4.5" />
+        <rect x="112" y="86" width="9" height="26" rx="4.5" />
+      </g>
+      <g fill="#bae6fd">
+        {BODY.map(([x, y, r]) => <circle key={`o${x}${y}`} cx={x} cy={y} r={r + 2} />)}
+      </g>
+      <g fill="#FDFCFC">
+        {BODY.map(([x, y, r]) => <circle key={`i${x}${y}`} cx={x} cy={y} r={r} />)}
+      </g>
+      <g fill="#1e293b">
+        <ellipse cx="121" cy="51" rx="11" ry="5" transform="rotate(-25 121 51)" />
+        <ellipse cx="151" cy="49" rx="11" ry="5" transform="rotate(25 151 49)" />
+        <ellipse cx="136" cy="62" rx="17" ry="20" />
+      </g>
+      <circle cx="136" cy="43" r="12" fill="#bae6fd" />
+      <circle cx="136" cy="43" r="10" fill="#FDFCFC" />
+      <g fill="#FDFCFC">
+        <circle cx="130" cy="61" r="3.6" />
+        <circle cx="143" cy="61" r="3.6" />
+      </g>
+      <g fill="#1e293b">
+        <circle cx="130.8" cy="61.4" r="1.8" />
+        <circle cx="143.8" cy="61.4" r="1.8" />
+      </g>
+      <g fill="#f43f5e">
+        <ellipse cx="136.5" cy="72" rx="5" ry="3" />
+        <circle cx="125" cy="69" r="2.8" opacity=".7" />
+        <circle cx="148" cy="69" r="2.8" opacity=".7" />
+      </g>
+    </svg>
+  );
+}
+
+const ACCESSORIES = {
+  pencil: <path d="M44 55l1-4 7-7 3 3-7 7z" fill="#fff" />,
+  book: <path d="M43.5 45.5H49v10h-5.500zM51 45.5h5.500v10H51z" fill="#fff" />,
+  quill: <path d="M56 44c-8 1-11 6-12 12 5-1 9-4 12-12z" fill="#fff" />,
+  bubble: <path d="M44 45h12a2 2 0 012 2v5a2 2 0 01-2 2h-6l-4 3v-3h-2a2 2 0 01-2-2v-5a2 2 0 012-2z" fill="#fff" />,
+  mail: (
+    <>
+      <rect x="43" y="45" width="14" height="10" rx="1.5" fill="#fff" />
+      <path d="M43.5 46l6.5 5 6.500-5" stroke="#38bdf8" strokeWidth="1.4" fill="none" />
+    </>
+  ),
+  phone: (
+    <>
+      <rect x="44" y="43.500" width="12" height="13" rx="2" fill="#fff" />
+      <circle cx="50" cy="53.500" r="1" fill="#38bdf8" />
+    </>
+  ),
+  pin: (
+    <>
+      <path d="M50 56s-5-4.500-5-8.500a5 5 0 0110 0c0 4-5 8.500-5 8.500z" fill="#fff" />
+      <circle cx="50" cy="47.500" r="1.800" fill="#38bdf8" />
+    </>
+  ),
+};
+
+// Small sheep face
+function SheepHead({ acc, className = "" }) {
+  const wool = [[20, 24, 11], [32, 18, 13], [44, 24, 11], [26, 32, 10], [38, 32, 10]];
+  return (
+    <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
+      <g fill="#1e293b">
+        <ellipse cx="15" cy="38" rx="9" ry="4.500" transform="rotate(-20 15 38)" />
+        <ellipse cx="49" cy="38" rx="9" ry="4.500" transform="rotate(20 49 38)" />
+      </g>
+      <g fill="#bae6fd">
+        {wool.map(([x, y, r]) => <circle key={`o${x}${y}`} cx={x} cy={y} r={r + 1.500} />)}
+      </g>
+      <ellipse cx="32" cy="40" rx="14" ry="16" fill="#1e293b" />
+      <g fill="#FDFCFC">
+        {wool.map(([x, y, r]) => <circle key={`i${x}${y}`} cx={x} cy={y} r={r} />)}
+        <circle cx="26" cy="39" r="3" />
+        <circle cx="38" cy="39" r="3" />
+      </g>
+      <g fill="#1e293b">
+        <circle cx="26.700" cy="39.400" r="1.500" />
+        <circle cx="38.700" cy="39.400" r="1.500" />
+      </g>
+      <ellipse cx="32" cy="48.500" rx="4.500" ry="3" fill="#f43f5e" />
+      {acc && (
+        <>
+          <circle cx="50" cy="50" r="12" fill="#38bdf8" />
+          {ACCESSORIES[acc]}
+        </>
+      )}
+    </svg>
+  );
+}
+
+/* ───────────── Clouds ───────────── */
+
+const FRONT = [
+  [30, 140, 46], [120, 128, 62], [235, 142, 48], [330, 118, 72], [450, 140, 52],
+  [545, 126, 66], [660, 144, 46], [760, 112, 76], [880, 138, 54], [975, 124, 68],
+  [1090, 144, 48], [1180, 114, 74], [1295, 138, 52], [1390, 126, 64],
+];
+const BACK = [
+  [0, 120, 56, 0], [90, 100, 70, 1], [200, 118, 58, 0], [300, 90, 78, 1],
+  [420, 112, 60, 0], [520, 94, 72, 1], [640, 118, 56, 0], [740, 86, 80, 1],
+  [850, 112, 60, 0], [960, 96, 72, 1], [1070, 118, 56, 0], [1170, 88, 78, 1],
+  [1280, 110, 60, 0], [1380, 94, 70, 1],
+];
+
+const CLOUD_H = "max(100vw, 1000px) * 0.1389";
+
+function Clouds({ fill, back, accent, flip = false, className = "", children }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none overflow-x-clip ${flip ? "rotate-180" : ""} ${className}`}
+    >
+      {children}
+      <svg
+        viewBox="0 0 1440 200"
+        className="relative block h-auto max-w-none w-[max(100%,1000px)] left-1/2 -translate-x-1/2"
+        style={{ filter: "drop-shadow(0 -3px 6px rgba(14,165,233,0.15))" }}
+      >
+        {back && (
+          <g>
+            {BACK.map(([x, y, r, a]) => (
+              <circle key={x} cx={x} cy={y} r={r} fill={a && accent ? accent : back} />
+            ))}
+            <rect x="0" y="130" width="1440" height="70" fill={back} />
+          </g>
+        )}
+        <g fill={fill}>
+          {FRONT.map(([x, y, r]) => <circle key={x} cx={x} cy={y} r={r} />)}
+          <rect x="0" y="150" width="1440" height="50" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+const NAV_ORDER = [...NAV_LINKS].reverse();
+
+function SheepAvatar({ bg, className = "", delay = "0s" }) {
+  return (
+    <span
+      className={`sheep-float absolute rounded-full flex items-center justify-center ${className}`}
+      style={{ background: bg, animationDelay: delay }}
+      aria-hidden="true"
+    >
+      <SheepHead className="w-4/5 h-4/5" />
+    </span>
+  );
+}
 
 function NavLink({ href, label, active, onClick }) {
   return (
     <a
       href={href}
       onClick={onClick}
-      className={`relative pb-1 transition-colors duration-300 ease-out after:content-[''] after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:bg-[#2A4F73] after:transition-all after:duration-300 after:ease-out ${
+      className={`relative pb-1 transition-colors duration-300 ease-out after:content-[''] after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:bg-[#38bdf8] after:transition-all after:duration-300 after:ease-out ${
         active
-          ? "text-[#16283F] font-bold after:w-full"
-          : "text-[#2A4F73]/80 font-semibold hover:text-[#16283F] after:w-0 hover:after:w-full"
+          ? "text-white font-bold after:w-full"
+          : "text-[#e0f2fe]/80 font-semibold hover:text-white after:w-0 hover:after:w-full"
       }`}
     >
       {label}
@@ -106,372 +285,410 @@ function NavLink({ href, label, active, onClick }) {
   );
 }
 
+const H2 = "text-3xl sm:text-5xl font-extrabold tracking-tight font-[family-name:var(--font-display)]";
 
 export default function Home() {
-const [menuOpen, setMenuOpen] = useState(false);
-const [openFaq, setOpenFaq] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState(0);
 
-
-const smoothScroll = (e, href) => {
+  const smoothScroll = (e, href) => {
     e.preventDefault();
-setMenuOpen(false);
+    setMenuOpen(false);
     document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const router = useRouter();
 
   const goToOptions = () => {
-    router.push('/options');
-  }
+    router.push("/options");
+  };
 
-return (
-<main
-className={`${display.variable} ${body.variable} min-h-screen bg-[#F5F8FB] text-[#212B36] overflow-x-hidden`}
-style={{ fontFamily: "var(--font-body)" }}
->
-<style jsx global>{`
+  return (
+    <main
+      className={`${display.variable} ${body.variable} ${irishGrover.variable} min-h-screen bg-[#FDFCFC] text-[#0f172a] overflow-x-hidden`}
+      style={{ fontFamily: "var(--font-body)" }}
+    >
+      <style jsx global>{`
         html {
           scroll-behavior: smooth;
         }
+        @keyframes sheep-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .sheep-float { animation: sheep-float 5s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          html { scroll-behavior: auto; }
+          .sheep-float { animation: none; }
+        }
       `}</style>
 
-
-{/* HERO — framed card matching the reference composition */}
-<section id="home" className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16">
-<div className="relative rounded-[2.25rem] sm:rounded-[3rem] bg-gradient-to-br from-[#4E7FB0] to-[#1F3B5C] p-1.5 sm:p-2.5 overflow-hidden shadow-xl shadow-[#16283F]/20">
-{/* faint texture circles on the outer frame, echoing the reference background */}
-<svg
-className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
-preserveAspectRatio="xMidYMid slice"
->
-<circle cx="92%" cy="12%" r="120" fill="none" stroke="white" strokeWidth="1.5" />
-<circle cx="97%" cy="55%" r="80" fill="none" stroke="white" strokeWidth="1.5" />
-<circle cx="88%" cy="90%" r="150" fill="none" stroke="white" strokeWidth="1.5" />
-</svg>
-
-
-<div className="relative bg-white rounded-[1.9rem] sm:rounded-[2.6rem] overflow-hidden">
-{/* decorative bulges so the card edge waves like the reference */}
-<div className="hidden sm:block absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white z-10" />
-<div className="hidden sm:block absolute -bottom-14 -right-14 w-56 h-56 rounded-full bg-gradient-to-br from-[#4E7FB0] to-[#1F3B5C]" />
-
-
-{/* NAV */}
-<nav className="relative z-20 flex items-center justify-between gap-6 lg:gap-8 px-6 sm:px-12 py-6 text-sm">
-<span className="font-bold text-xl text-[#16283F] font-[family-name:var(--font-display)] tracking-wide shrink-0">
+{/* HERO — Updated with Custom Hero Image */}
+      <section
+        id="home"
+        className="relative min-h-screen flex flex-col overflow-hidden bg-[#f4f1ea]" // Light off-white background matching poster texture
+      >
+        <div className="relative z-30 w-full max-w-7xl mx-auto px-6 sm:px-12">
+          {/* NAV with aligned Logo + Horizon */}
+          <nav className="relative flex items-center justify-between gap-6 lg:gap-8 py-6 text-sm">
+            <div className="flex items-center gap-2.5 shrink-0">
+              <img src="/images/logo.png" className="w-10 h-10 object-contain" alt="Sudartan Logo" />
+              <span className="font-extrabold text-2xl text-[#0284c7] font-[family-name:var(--font-display)] tracking-wide leading-none">
                 СУДАРТАН
-</span>
-<div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center gap-6 lg:gap-8">
-{NAV_LINKS.map((link) => (
-<NavLink
-key={link.href}
-{...link}
-onClick={(e) => smoothScroll(e, link.href)}
-/>
-                ))}
-</div>
-<button className="hidden sm:inline-flex px-6 py-2.5 rounded-full bg-[#1F3B5C] hover:bg-[#16283F] text-white font-semibold transition-colors duration-300 shrink-0">
+              </span>
+            </div>
+
+            <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center gap-6 lg:gap-8">
+              {NAV_ORDER.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => smoothScroll(e, link.href)}
+                  className={`relative pb-1 transition-colors duration-300 ease-out ${
+                    link.active
+                      ? "text-[#0284c7] font-bold"
+                      : "text-[#334155] font-semibold hover:text-[#0284c7]"
+                  }`}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+
+            <button className="hidden sm:inline-flex px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-md">
+              Нэвтрэх
+            </button>
+
+            <button
+              aria-label="Цэс"
+              className="sm:hidden text-2xl text-[#0284c7] p-1"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              {menuOpen ? "✕" : "☰"}
+            </button>
+          </nav>
+
+          {menuOpen && (
+            <div className="sm:hidden rounded-[30px] bg-[#0284c7] p-4 flex flex-col gap-1 border border-[#7dd3fc]/40 shadow-lg">
+              {NAV_ORDER.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => smoothScroll(e, link.href)}
+                  className={`px-3 py-2.5 rounded-2xl transition-colors duration-300 ${
+                    link.active
+                      ? "text-white font-bold bg-[#0369a1]"
+                      : "text-[#e0f2fe] font-semibold hover:bg-[#0369a1]"
+                  }`}
+                >
+                  {link.label}
+                </a>
+              ))}
+              <button className="mt-2 w-full py-2.5 rounded-full bg-white text-[#0284c7] font-extrabold">
                 Нэвтрэх
-</button>
-<button
-aria-label="Цэс"
-className="sm:hidden text-2xl text-[#16283F] p-1"
-onClick={() => setMenuOpen(!menuOpen)}
->
-{menuOpen ? "✕" : "☰"}
-</button>
-</nav>
+              </button>
+            </div>
+          )}
+        </div>
 
+        {/* HERO CONTENT CONTAINER */}
+        <div
+          className="relative z-20 flex-1 flex flex-col items-center justify-center text-center px-4 pt-4"
+          style={{ paddingBottom: `calc(${CLOUD_H} + 5rem)` }}
+        >
+          <div className="relative max-w-4xl mx-auto w-full">
+            {/* Bubbly Sheep Avatars around the Poster Graphic */}
+            <SheepAvatar bg="#e0f2fe" className="-top-6 -right-2 sm:-top-8 sm:-right-8 w-16 h-16 sm:w-24 sm:h-24 shadow-lg z-30" />
+            <SheepAvatar bg="#bae6fd" delay="-1.5s" className="top-1/3 -left-3 sm:-left-10 w-14 h-14 sm:w-20 sm:h-20 shadow-lg z-30" />
+            <SheepAvatar bg="#ffffff" delay="-3s" className="-bottom-8 left-4 sm:left-12 w-16 h-16 sm:w-24 sm:h-24 shadow-lg z-30" />
 
-{menuOpen && (
-<div className="sm:hidden relative z-20 px-6 pb-4 flex flex-col gap-1">
-{NAV_LINKS.map((link) => (
-<a
-key={link.href}
-href={link.href}
-onClick={(e) => smoothScroll(e, link.href)}
-className={`py-2.5 rounded-lg transition-colors duration-300 ${
-link.active
-                        ? "text-[#16283F] font-bold"
-                        : "text-[#2A4F73]/80 font-semibold hover:text-[#16283F] hover:bg-[#F1F6FA]"
-}`}
->
-{link.label}
-</a>
-                ))}
-<button className="mt-2 w-full py-2.5 rounded-full bg-[#1F3B5C] text-white font-semibold">
-                  Нэвтрэх
-</button>
-</div>
-            )}
+            {/* Poster Image Replacement */}
+            <div className="relative w-full overflow-hidden rounded-3xl shadow-xl border border-black/5 bg-white">
+              <img
+                src="/images/hero.png"
+                alt="Монгол хэлийг хашраацгаая"
+                className="w-full h-auto object-cover max-h-[520px]"
+              />
+            </div>
 
+            {/* Subtitle Badge */}
+            <p className="relative z-30 text-lg sm:text-xl font-bold text-[#0369a1] leading-snug max-w-lg mx-auto mt-6 bg-white/80 backdrop-blur-md py-2.5 px-6 rounded-full border border-[#38bdf8]/30 shadow-sm">
+              Хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц дасгалыг агуулсан Монголын анхны сайт.
+            </p>
 
-{/* ILLUSTRATION + COPY */}
-<div className="relative z-10 grid lg:grid-cols-2 gap-10 items-center px-6 sm:px-12 pb-12 pt-2">
-<div className="flex justify-center lg:justify-start">
-{/* eslint-disable-next-line @next/next/no-img-element */}
-<img
-src="/Thesis-rafiki.svg"
-alt="Судалгаа, дипломын ажил бичиж буй оюутны зурган дүрслэл"
-className="w-full max-w-md"
-/>
-</div>
+            {/* CTA Button */}
+            <div className="relative z-30 flex justify-center pt-6">
+              <button
+                className="px-10 py-4 bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold text-lg rounded-full shadow-xl hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"
+                onClick={goToOptions}
+              >
+                Эхлэх
+              </button>
+            </div>
+          </div>
+        </div>
 
+        {/* Clouds footer with Sheep */}
+        <Clouds
+          fill="#FDFCFC"
+          back="#bae6fd"
+          accent="#7dd3fc"
+          className="absolute bottom-0 inset-x-0 z-10 -mb-px"
+        >
+          <div className="absolute left-1/2 bottom-[55%] -translate-x-1/2 w-full max-w-4xl flex items-end justify-center gap-3 sm:gap-8 px-4">
+            <Sheep className="sheep-float w-16 sm:w-24 -mb-2" />
+            <Sheep className="sheep-float w-24 sm:w-36" />
+            <Sheep className="sheep-float w-32 sm:w-48 z-10" />
+            <Sheep className="sheep-float w-20 sm:w-32 -mb-1" />
+            <Sheep className="sheep-float w-16 sm:w-24 -mb-3" />
+          </div>
+        </Clouds>
+      </section>
 
-{/* TEXT PANEL */}
-<div className="space-y-5 text-center lg:text-left">
-<p className="text-3xl sm:text-4xl font-light text-[#3B6EA5] font-[family-name:var(--font-display)]">
-                  Хэлний дархлаагаа
-</p>
-<h1 className="text-4xl sm:text-5xl font-bold uppercase text-[#16283F] -mt-3 font-[family-name:var(--font-display)]">
-                  бэхжүүлцгээе.
-</h1>
-<p className="text-[#51606F] leading-relaxed max-w-md mx-auto lg:mx-0">
-                  Хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц дасгалыг агуулсан Монголын анхны сайт.
-</p>
-<div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-2">
-<button className="px-8 py-3.5 bg-[#1F3B5C] hover:bg-[#16283F] text-white font-semibold rounded-full transition-colors duration-300 " onClick={goToOptions}>
-                    Эхлэх
-</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-
-
-{/* ABOUT */}
-<section id="about" className="bg-white border-y border-[#DCE7F2]">
-<div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-14 items-center">
-<div className="space-y-5">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
+      {/* ABOUT */}
+      <section id="about" className="bg-[#FDFCFC]">
+        <div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-14 items-center">
+          <div className="space-y-5">
+            <h2 className={`${H2} text-[#0f172a]`}>
               Бидний тухай
-</h2>
-<p className="text-[#51606F] leading-relaxed max-w-lg">
+            </h2>
+            <p className="text-[#475569] leading-relaxed max-w-lg">
               Судартан нь монгол хэлний зөв бичих дүрэм, үгийн сан, үндэсний монгол бичгийг нэг дороос сурах боломжийг олгодог платформ юм. Бид
               монгол хэлний багш нартай хамтран хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц талбарыг үүсгэлээ. 
-</p>
-<p className="text-[#51606F] leading-relaxed max-w-lg">
+            </p>
+            <p className="text-[#475569] leading-relaxed max-w-lg">
               Цаг ирэх тусам хэл бичгийн шалгалтын оноо буурч, жил бүр 5000-10000 сурагч хэл бичгийн элсэлтийн шалгалтдаа 
               400-аас доош оноо авч их сургуульд элсэн орох боломжоо алдаж байна. Эдгээр болон бусад хүүхдүүдэд хэл бичгийн 
               элсэлтийн шалгалтандаа бэлдэж сайжрахад нь тусалж, цаашлаад монголын соёлын амин сүнс нь болсон эх хэлийнхээ ач 
               холбогдолыг танин мэдүүлэх нь бидний зорилго билээ.
-</p>
-</div>
+            </p>
+          </div>
 
-
-<div className="grid grid-cols-2 gap-5">
-{STATS.map((stat) => (
-<div
-key={stat.label}
-className="rounded-2xl border border-[#DCE7F2] bg-[#F5F8FB] p-6"
->
-<p className="text-3xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
-{stat.value}
-</p>
-<p className="text-[#6B7B8C] mt-1 text-sm">{stat.label}</p>
-</div>
+          <div className="grid grid-cols-2 gap-5">
+            {STATS.map((stat, i) => (
+              <div
+                key={stat.label}
+                className={`rounded-[30px] bg-[#e0f2fe] p-6 border border-[#bae6fd] ${i % 2 ? "translate-y-4" : ""}`}
+              >
+                <p className="text-4xl font-black text-[#0284c7] font-[family-name:var(--font-display)]">
+                  {stat.value}
+                </p>
+                <p className="text-[#0369a1] mt-1 text-sm font-semibold">{stat.label}</p>
+              </div>
             ))}
-</div>
-</div>
-</section>
+          </div>
+        </div>
+      </section>
 
+      {/* OFFER */}
+      <section id="offer" className="relative bg-[#0284c7] overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,#38bdf8_0%,transparent_55%)] opacity-70" />
+        <Clouds fill="#FDFCFC" flip className="absolute top-0 inset-x-0 -mt-px" />
+        <div className="relative max-w-7xl mx-auto px-6" style={{ paddingTop: `calc(${CLOUD_H} + 3rem)`, paddingBottom: `calc(${CLOUD_H} + 3rem)` }}>
+          <div className="max-w-lg mb-12">
+            <h2 className={`${H2} text-white`}>
+              Бидний үйлчилгээ
+            </h2>
+            <p className="text-[#e0f2fe] mt-3 leading-relaxed">
+              Дөрвөн үндсэн чиглэлээр эх хэлнийхээ мэдлэгийг системтэйгээр
+              дээшлүүлээрэй.
+            </p>
+          </div>
 
-{/* OFFER */}
-<section id="offer" className="max-w-7xl mx-auto px-6 py-20">
-<div className="max-w-lg mb-12">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
-            Бидний үйлчилгээ
-</h2>
-<p className="text-[#51606F] mt-3 leading-relaxed">
-            Дөрвөн үндсэн чиглэлээр эх хэлнийхээ мэдлэгийг системтэйгээр
-            дээшлүүлээрэй.
-</p>
-</div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {OFFERS.map((offer) => (
+              <div
+                key={offer.title}
+                className="rounded-[30px] bg-white/10 backdrop-blur-md border border-white/20 p-6 hover:border-white/60 transition-colors duration-300"
+              >
+                <span className="w-16 h-16 rounded-full bg-[#0369a1] flex items-center justify-center mb-5 shadow-inner">
+                  <SheepHead acc={offer.icon} className="w-12 h-12" />
+                </span>
+                <h3 className="font-extrabold text-white text-xl mb-2 font-[family-name:var(--font-display)]">
+                  {offer.title}
+                </h3>
+                <p className="text-[#e0f2fe] text-sm leading-relaxed">
+                  {offer.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <Clouds
+          fill="#FDFCFC"
+          back="#bae6fd"
+          className="absolute bottom-0 inset-x-0 -mb-px"
+        />
+      </section>
 
-
-<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-{OFFERS.map((offer) => (
-<div
-key={offer.title}
-className="rounded-2xl border border-[#DCE7F2] p-6 hover:border-[#4E7FB0] transition-colors duration-300"
->
-<span className="w-11 h-11 rounded-xl bg-[#1F3B5C] text-[#DCE7F2] flex items-center justify-center text-lg mb-5">
-{offer.icon}
-</span>
-<h3 className="font-bold text-[#16283F] text-lg mb-2 font-[family-name:var(--font-display)]">
-{offer.title}
-</h3>
-<p className="text-[#57697A] text-sm leading-relaxed">
-{offer.desc}
-</p>
-</div>
-          ))}
-</div>
-</section>
-
-
-{/* FAQ */}
-<section id="faq" className="bg-white border-y border-[#DCE7F2]">
-<div className="max-w-3xl mx-auto px-6 py-20">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)] mb-12">
+      {/* FAQ */}
+      <section id="faq" className="bg-[#FDFCFC]">
+        <div className="max-w-3xl mx-auto px-6 py-20">
+          <h2 className={`${H2} text-[#0f172a] mb-12`}>
             Асуулт & хариулт
-</h2>
+          </h2>
 
-
-<div className="divide-y divide-[#DCE7F2] border-t border-b border-[#DCE7F2]">
-{FAQS.map((item, idx) => {
-const isOpen = openFaq === idx;
-return (
-<div key={item.q}>
-<button
-onClick={() => setOpenFaq(isOpen ? -1 : idx)}
-className="w-full flex items-center justify-between gap-4 py-5 text-left"
->
-<span className="font-semibold text-[#16283F]">
-{item.q}
-</span>
-<span
-className={`shrink-0 w-7 h-7 rounded-full border border-[#C7D9EA] flex items-center justify-center text-[#1F3B5C] transition-transform duration-300 ${
-isOpen ? "rotate-45" : ""
-}`}
->
+          <div className="space-y-3">
+            {FAQS.map((item, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={item.q}
+                  className={`rounded-[28px] px-6 transition-colors duration-300 ${
+                    isOpen ? "bg-[#e0f2fe]" : "bg-[#f0f9ff]"
+                  }`}
+                >
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? -1 : idx)}
+                    className="w-full flex items-center justify-between gap-4 py-5 text-left"
+                  >
+                    <span className="font-bold text-[#0c4a6e]">
+                      {item.q}
+                    </span>
+                    <span
+                      className={`shrink-0 w-8 h-8 rounded-full bg-[#38bdf8] flex items-center justify-center font-bold text-white transition-transform duration-300 ${
+                        isOpen ? "rotate-45" : ""
+                      }`}
+                    >
                       +
-</span>
-</button>
-{isOpen && (
-<p className="text-[#57697A] leading-relaxed pb-5 pr-10">
-{item.a}
-</p>
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <p className="text-[#0369a1] leading-relaxed pb-5 pr-10">
+                      {item.a}
+                    </p>
                   )}
-</div>
+                </div>
               );
             })}
-</div>
-</div>
-</section>
+          </div>
+        </div>
+      </section>
 
+      {/* FOUNDERS — Larger pictures */}
+      <section id="founders" className="relative bg-[#e0f2fe]">
+        <Clouds fill="#FDFCFC" flip className="absolute top-0 inset-x-0 -mt-px" />
+        <div className="max-w-7xl mx-auto px-6" style={{ paddingTop: `calc(${CLOUD_H} + 3rem)`, paddingBottom: `calc(${CLOUD_H} + 3rem)` }}>
+          <div className="max-w-lg mb-12 mx-auto text-center">
+            <h2 className={`${H2} text-[#0c4a6e]`}>
+              Үүсгэн байгуулагчид
+            </h2>
+          </div>
 
-{/* ҮҮСГЭН БАЙГУУЛАГЧИД */}
-<section id="founders" className="max-w-7xl mx-auto px-6 py-20">
-<div className="max-w-lg mb-12 mx-auto text-center">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
-            Үүсгэн байгуулагчид
-</h2>
-</div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
+            {FOUNDERS.map((founder, i) => (
+              <div key={founder.name} className="flex flex-col items-center text-center">
+                {/* LARGER ROUND PICTURES: w-36 h-36 sm:w-44 sm:h-44 */}
+                <span
+                  className="w-36 h-36 sm:w-44 sm:h-44 rounded-full border-4 border-white shadow-xl flex items-center justify-center mb-4 transform hover:scale-105 transition-transform duration-300"
+                  style={{ background: AVATAR_BG[i % AVATAR_BG.length] }}
+                  role="img"
+                  aria-label={founder.name}
+                >
+                  <SheepHead className="w-28 h-28 sm:w-36 sm:h-36" />
+                </span>
+                <p className="font-extrabold text-[#0c4a6e] text-lg font-[family-name:var(--font-display)]">
+                  {founder.name}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <Clouds fill="#FDFCFC" className="absolute bottom-0 inset-x-0 -mb-px" />
+      </section>
 
-
-<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
-{FOUNDERS.map((founder) => (
-  <div key={founder.name} className="flex flex-col items-center text-center">
-    {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img
-      src={undefined}   // ← replace with real image path later, e.g. "/founders/odbayar.jpg"
-      alt={founder.name}
-      className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-[#DCE7F2] bg-[#F5F8FB] mb-4"
-    />
-    <p className="font-semibold text-[#16283F] font-[family-name:var(--font-display)]">
-      {founder.name}
-    </p>
-  </div>
-))}
-</div>
-</section>
-
-
-{/* CONTACT */}
-<section id="contact" className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-14">
-<div className="space-y-6">
-<h2 className="text-3xl sm:text-4xl font-bold text-[#16283F] font-[family-name:var(--font-display)]">
-            Холбоо барих
-</h2>
-<p className="text-[#51606F] leading-relaxed max-w-md">
-            Асуулт, санал хүсэлт байвал бидэнтэй чөлөөтэй холбогдоорой.
-            Ажлын өдрүүдэд бид 24 цагийн дотор хариу өгөхийг зорьдог.
-</p>
-
-
-<div className="space-y-4 pt-2">
-<div className="flex items-center gap-3">
-<span className="w-10 h-10 rounded-full bg-[#F1F6FA] flex items-center justify-center">
-                ✉️
-</span>
-<span className="text-[#212B36]">info@sudartan.mn</span>
-</div>
-<div className="flex items-center gap-3">
-<span className="w-10 h-10 rounded-full bg-[#F1F6FA] flex items-center justify-center">
-                📞
-</span>
-<span className="text-[#212B36]">+976 7000 1234</span>
-</div>
-<div className="flex items-center gap-3">
-<span className="w-10 h-10 rounded-full bg-[#F1F6FA] flex items-center justify-center">
-                📍
-</span>
-<span className="text-[#212B36]">
-                Сүхбаатар дүүрэг, Улаанбаатар хот
-</span>
-</div>
-</div>
-</div>
-
-
-<form className="space-y-4 bg-white border border-[#DCE7F2] rounded-2xl p-7">
-<div>
-<label className="block text-sm font-semibold text-[#16283F] mb-1.5">
-              Нэр
-</label>
-<input
-type="text"
-placeholder="Таны нэр"
-className="w-full px-4 py-3 rounded-xl border border-[#DCE7F2] bg-[#F5F8FB] outline-none focus:border-[#3B6EA5] transition-colors duration-300"
-/>
-</div>
-<div>
-<label className="block text-sm font-semibold text-[#16283F] mb-1.5">
-              И-мэйл
-</label>
-<input
-type="email"
-placeholder="tanii@imeil.mn"
-className="w-full px-4 py-3 rounded-xl border border-[#DCE7F2] bg-[#F5F8FB] outline-none focus:border-[#3B6EA5] transition-colors duration-300"
-/>
-</div>
-<div>
-<label className="block text-sm font-semibold text-[#16283F] mb-1.5">
-              Зурвас
-</label>
-<textarea
-rows={4}
-placeholder="Бидэнд юу хэлэхийг хүсэж байна вэ?"
-className="w-full px-4 py-3 rounded-xl border border-[#DCE7F2] bg-[#F5F8FB] outline-none focus:border-[#3B6EA5] transition-colors duration-300 resize-none"
-/>
-</div>
-<button
-type="submit"
-className="w-full py-3.5 bg-[#1F3B5C] hover:bg-[#16283F] text-white font-semibold rounded-xl transition-colors duration-300"
->
-            Илгээх
-</button>
-</form>
-</section>
-
-
-{/* FOOTER */}
-<footer className="border-t border-[#DCE7F2] bg-white py-8">
-<div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-[#6B7B8C] text-sm font-medium">
-<p>© {new Date().getFullYear()} Судартан. Бүх эрх хуулиар хамгаалагдсан.</p>
-<div className="flex gap-6">
-<a href="#about" onClick={(e) => smoothScroll(e, "#about")} className="hover:text-[#1F3B5C] transition-colors duration-300">
-              Бидний тухай
-</a>
-<a href="#contact" onClick={(e) => smoothScroll(e, "#contact")} className="hover:text-[#1F3B5C] transition-colors duration-300">
+      {/* CONTACT */}
+      <section id="contact" className="bg-[#FDFCFC]">
+        <div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-14">
+          <div className="space-y-6">
+            <h2 className={`${H2} text-[#0f172a]`}>
               Холбоо барих
-</a>
-</div>
-</div>
-</footer>
-</main>
+            </h2>
+            <p className="text-[#475569] leading-relaxed max-w-md">
+              Асуулт, санал хүсэлт байвал бидэнтэй чөлөөтэй холбогдоорой.
+              Ажлын өдрүүдэд бид 24 цагийн дотор хариу өгөхийг зорьдог.
+            </p>
+
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-3">
+                <span className="w-12 h-12 rounded-full bg-[#e0f2fe] flex items-center justify-center">
+                  <SheepHead acc="mail" className="w-9 h-9" />
+                </span>
+                <span className="text-[#0f172a] font-semibold">info@sudartan.mn</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="w-12 h-12 rounded-full bg-[#e0f2fe] flex items-center justify-center">
+                  <SheepHead acc="phone" className="w-9 h-9" />
+                </span>
+                <span className="text-[#0f172a] font-semibold">+976 7000 1234</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="w-12 h-12 rounded-full bg-[#e0f2fe] flex items-center justify-center">
+                  <SheepHead acc="pin" className="w-9 h-9" />
+                </span>
+                <span className="text-[#0f172a] font-semibold">
+                  Сүхбаатар дүүрэг, Улаанбаатар хот
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <form className="space-y-4 bg-[#0284c7] rounded-[30px] p-7 sm:p-9 shadow-xl">
+            <div>
+              <label className="block text-sm font-bold text-[#e0f2fe] mb-1.5">
+                Нэр
+              </label>
+              <input
+                type="text"
+                placeholder="Таны нэр"
+                className="w-full px-4 py-3 rounded-2xl border border-[#38bdf8] bg-[#0369a1] text-white placeholder:text-[#bae6fd] outline-none focus:border-white transition-colors duration-300"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-[#e0f2fe] mb-1.5">
+                И-мэйл
+              </label>
+              <input
+                type="email"
+                placeholder="tanii@imeil.mn"
+                className="w-full px-4 py-3 rounded-2xl border border-[#38bdf8] bg-[#0369a1] text-white placeholder:text-[#bae6fd] outline-none focus:border-white transition-colors duration-300"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-[#e0f2fe] mb-1.5">
+                Зурвас
+              </label>
+              <textarea
+                rows={4}
+                placeholder="Бидэнд юу хэлэхийг хүсэж байна вэ?"
+                className="w-full px-4 py-3 rounded-2xl border border-[#38bdf8] bg-[#0369a1] text-white placeholder:text-[#bae6fd] outline-none focus:border-white transition-colors duration-300 resize-none"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3.5 bg-white hover:bg-[#e0f2fe] text-[#0284c7] font-extrabold rounded-full transition-colors duration-300 shadow-md"
+            >
+              Илгээх
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="relative bg-[#0284c7] pb-8" style={{ paddingTop: `calc(${CLOUD_H} + 2rem)` }}>
+        <Clouds fill="#FDFCFC" flip className="absolute top-0 inset-x-0 -mt-px" />
+        <div className="relative max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-[#bae6fd] text-sm font-semibold">
+          <p>© {new Date().getFullYear()} Судартан. Бүх эрх хуулиар хамгаалагдсан.</p>
+          <div className="flex gap-6">
+            <a href="#about" onClick={(e) => smoothScroll(e, "#about")} className="hover:text-white transition-colors duration-300">
+              Бидний тухай
+            </a>
+            <a href="#contact" onClick={(e) => smoothScroll(e, "#contact")} className="hover:text-white transition-colors duration-300">
+              Холбоо барих
+            </a>
+          </div>
+        </div>
+      </footer>
+    </main>
   );
 }

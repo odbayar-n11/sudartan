@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Nunito, Irish_Grover, } from "next/font/google";
 import { useRouter } from "next/navigation";
+import Link from 'next/link';
 
 const display = Nunito({
   subsets: ["cyrillic", "latin"],
@@ -341,10 +342,24 @@ export default function Home() {
                 </a>
               ))}
             </div>
+            
+            <div className="flex items-center gap-4">
+  {/* Бүртгүүлэх (Sign Up) */}
+  <Link 
+    href="/sign-up" 
+    className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
+  >
+    Бүртгүүлэх
+  </Link>
 
-            <button className="hidden sm:inline-flex px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg">
-              Нэвтрэх
-            </button>
+  {/* Нэвтрэх (Sign In) */}
+  <Link 
+    href="/sign-in" 
+    className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
+  >
+    Нэвтрэх
+  </Link>
+</div>
 
             <button
               aria-label="Цэс"

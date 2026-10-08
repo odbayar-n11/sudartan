@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Nunito } from "next/font/google";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from '@/lib/supabase'
 
 const nunito = Nunito({ subsets: ["latin", "cyrillic"], weight: ["600", "800", "900"] });
 

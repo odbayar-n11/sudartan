@@ -471,7 +471,7 @@ export default function Home() {
       </section>
 
       {/* OFFER */}
-      <section id="offer" className="relative bg-[#0284c7] overflow-hidden">
+      <section id="offer" className="relative bg-[#e0f2fe] overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,#38bdf8_0%,transparent_55%)] opacity-70" />
         <Clouds fill="#FDFCFC" flip className="absolute top-0 inset-x-0 -mt-px" />
         <div className="relative max-w-7xl mx-auto px-6" style={{ paddingTop: `calc(${CLOUD_H} + 3rem)`, paddingBottom: `calc(${CLOUD_H} + 3rem)` }}>
@@ -479,7 +479,7 @@ export default function Home() {
             <h2 className={`${H2} text-white`}>
               Бидний үйлчилгээ
             </h2>
-            <p className="text-[#e0f2fe] mt-3 leading-relaxed">
+            <p className="text-[#ffffff] mt-3 leading-relaxed">
               Дөрвөн үндсэн чиглэлээр эх хэлнийхээ мэдлэгийг системтэйгээр
               дээшлүүлээрэй.
             </p>

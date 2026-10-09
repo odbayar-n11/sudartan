@@ -315,9 +315,7 @@ export default function Home() {
                 {!authLoading && (
                   user ? (
                     <>
-                      <Link className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg" href="/myclass/dashboard">
-                        Миний анги
-                      </Link>
+                      
                       <button
                         onClick={handleLogout}
                         className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-white/90 hover:bg-white text-[#0284c7] font-extrabold transition-colors duration-300 shrink-0 shadow-lg"

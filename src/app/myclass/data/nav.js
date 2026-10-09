@@ -4,7 +4,7 @@ export const mainNav = [
   { label: "Нүүр", icon: "🏠", href: "/myclass/dashboard" },
   { label: "Дасгалууд", icon: "🎓", href: "/myclass/lessons", also: topicPaths }, // stays highlighted inside topic pages
   { label: "Төлөвлөгөө", icon: "📅", href: "/myclass/plan" },
-  { label: "Статистик", icon: "📊", href: "/myclass/stats" },
+  { label: "Алдсан", icon: "📊", href: "/myclass/stats" },
   { label: "Хадгалсан", icon: "🔖", href: "/myclass/saved" },
 ];
 

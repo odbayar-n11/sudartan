@@ -1,31 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Manrope } from "next/font/google";
-import "./dashboard.css";
-
-const manrope = Manrope({ subsets: ["latin", "cyrillic"], weight: ["500", "600", "700", "800"] });
+import AppShell from "../components/AppShell";
 
 /* ---------- Data (replace with your API) ---------- */
-const mainNav = [
-  { label: "Нүүр", icon: "🏠", href: "/dashboard" },
-  { label: "Хичээлүүд", icon: "🎓", href: "/lessons" },
-  { label: "Төлөвлөгөө", icon: "📅", href: "/plan" },
-  { label: "Статистик", icon: "📊", href: "/stats" },
-  { label: "Хадгалсан", icon: "🔖", href: "/saved" },
-];
-
-const topicNav = [
-  { label: "Эртний үг", icon: "📜", href: "/topics/ancient" },
-  { label: "Зөв бичих дүрэм", icon: "✍️", href: "/topics/grammar" },
-  { label: "Журамласан үг", icon: "🗣️", href: "/topics/words" },
-  { label: "Хэлц үг", icon: "💬", href: "/topics/idioms", badge: "Шинэ" },
-  { label: "Монгол бичиг", icon: "🖋️", href: "/topics/script" },
-  { label: "Найзаа урих", icon: "👥", href: "/invite" },
-];
-
 const stats = [
   { label: "Нийт хэрэглэгч", value: "5,423", change: "16% энэ сард", trend: "up" },
   { label: "Гишүүд", value: "1,893", change: "1% энэ сард", trend: "down" },
@@ -42,35 +20,6 @@ const customers = [
   { id: 7, name: "Jacob Jones", company: "Yahoo", phone: "(208) 555-0112", email: "jacob@yahoo.com", country: "Brazil", status: "Active" },
   { id: 8, name: "Kristin Watson", company: "Facebook", phone: "(704) 555-0127", email: "kristin@facebook.com", country: "Åland Islands", status: "Inactive" },
 ];
-
-/* ---------- Sidebar ---------- */
-function NavLink({ item }) {
-  const pathname = usePathname();
-  const active = pathname === item.href;
-  return (
-    <Link href={item.href} className={active ? "nav-link on" : "nav-link"} aria-current={active ? "page" : undefined}>
-      <span className="ic" aria-hidden>{item.icon}</span>
-      {item.label}
-      {item.badge && <span className="pill">{item.badge}</span>}
-    </Link>
-  );
-}
-
-function Sidebar({ userName }) {
-  return (
-    <aside className="sidebar">
-         <div className="logo"><img src="/logo.png" alt="" width="40" height="40" />Судартан</div>
-      <nav aria-label="Үндсэн цэс">
-        {mainNav.map((i) => <NavLink key={i.href} item={i} />)}
-        <div className="grp">Сэдвүүд</div>
-        {topicNav.map((i) => <NavLink key={i.href} item={i} />)}
-      </nav>
-      <div className="grow" />
-      <div className="upg">Pro болох <b>40% хямдрал</b></div>
-      <div className="me"><i aria-hidden />{userName}</div>
-    </aside>
-  );
-}
 
 /* ---------- Stats ---------- */
 function Stats() {
@@ -149,27 +98,21 @@ export default function DashboardPage() {
   const userName = "y/n";
 
   return (
-    <div className={`app ${manrope.className}`}>
-      <Sidebar userName={userName} />
-      <main>
-        <div className="promo">Онцгой хямдрал 40% <button>Авах</button></div>
-        <div className="wrap">
-          <div className="top">
-            <div>
-              <h1>Өдрийн мэнд,<small>{userName} 👋</small></h1>
-              <p className="lead">Эхлээд суралцах төлөвлөгөө гаргацгаая</p>
-              <button className="btn">Төлөвлөгөө үүсгэх</button>
-            </div>
-            <div className="chips"><div className="chip">🔥 0</div><div className="chip">💎 20</div></div>
-          </div>
-
-          <h2 className="sec"><span className="ib" aria-hidden>📊</span>Статистик</h2>
-          <Stats />
-
-          <h2 className="sec"><span className="ib" aria-hidden>👥</span>Хэрэглэгчид</h2>
-          <CustomersTable />
+    <AppShell userName={userName}>
+      <div className="top">
+        <div>
+          <h1>Өдрийн мэнд,<small>{userName} 👋</small></h1>
+          <p className="lead">Эхлээд суралцах төлөвлөгөө гаргацгаая</p>
+          <button className="btn">Төлөвлөгөө үүсгэх</button>
         </div>
-      </main>
-    </div>
+        <div className="chips"><div className="chip">🔥 0</div><div className="chip">💎 20</div></div>
+      </div>
+
+      <h2 className="sec"><span className="ib" aria-hidden>📊</span>Статистик</h2>
+      <Stats />
+
+      <h2 className="sec"><span className="ib" aria-hidden>👥</span>Хэрэглэгчид</h2>
+      <CustomersTable />
+    </AppShell>
   );
 }

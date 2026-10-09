@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Nunito, Irish_Grover, } from "next/font/google";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
+import { supabase } from "@/lib/supabase";
 
 const display = Nunito({
   subsets: ["cyrillic", "latin"],
@@ -272,13 +273,35 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
 
+  const router = useRouter();
+
+  // ── Auth state ──
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setMenuOpen(false);
+  };
+
   const smoothScroll = (e, href) => {
     e.preventDefault();
     setMenuOpen(false);
     document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-
-  const router = useRouter();
 
   const goToOptions = () => {
     router.push("/options");
@@ -345,24 +368,46 @@ export default function Home() {
                 </a>
               ))}
             </div>
-            
-            <div className="flex items-center gap-4">
-  {/* Бүртгүүлэх (Sign Up) */}
-  <Link 
-    href="/signup" 
-    className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
-  >
-    Бүртгүүлэх
-  </Link>
 
-  {/* Нэвтрэх (Sign In) */}
-  <Link 
-    href="/signin" 
-    className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
-  >
-    Нэвтрэх
-  </Link>
-</div>
+            {/* AUTH BUTTONS (desktop) */}
+            <div className="flex items-center gap-4 min-h-[44px]">
+              {!authLoading && (
+                user ? (
+                  <>
+                    <Link
+                      href="/myclass/dashboard"
+                      className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
+                    >
+                      Миний анги
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-white/90 hover:bg-white text-[#0284c7] font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
+                    >
+                      Гарах
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Бүртгүүлэх (Sign Up) */}
+                    <Link
+                      href="/signup"
+                      className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
+                    >
+                      Бүртгүүлэх
+                    </Link>
+
+                    {/* Нэвтрэх (Sign In) */}
+                    <Link
+                      href="/signin"
+                      className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
+                    >
+                      Нэвтрэх
+                    </Link>
+                  </>
+                )
+              )}
+            </div>
 
             <button
               aria-label="Цэс"
@@ -389,42 +434,54 @@ export default function Home() {
                   {link.label}
                 </a>
               ))}
-              <button className="mt-2 w-full py-2.5 rounded-full bg-white text-[#0284c7] font-extrabold">
-                Нэвтрэх
-              </button>
+              {user ? (
+                <button
+                  onClick={handleLogout}
+                  className="mt-2 w-full py-2.5 rounded-full bg-white text-[#0284c7] font-extrabold"
+                >
+                  Гарах
+                </button>
+              ) : (
+                <Link
+                  href="/signin"
+                  className="mt-2 w-full py-2.5 rounded-full bg-white text-[#0284c7] font-extrabold text-center block"
+                >
+                  Нэвтрэх
+                </Link>
+              )}
             </div>
           )}
         </div>
 
         {/* HERO CENTER CONTENT */}
-<div
-  className="relative z-20 flex-1 flex flex-col items-center justify-end text-center px-4 pb-12"
-  style={{ paddingBottom: `calc(${CLOUD_H} + 0.5rem)` }}
->
-  <div className="relative w-full max-w-7xl mx-auto">
-    {/* Left column – first 6/10 of the width, flex-col */}
-    <div className="w-[60%] max-w-xl flex flex-col items-start text-left">
-      <img
-        src="/images/texttt.png"
-        alt=""
-        className="w-full h-auto mb-4"
-      />
-      <p className="text-xl sm:text-2xl font-extrabold text-[#0a5600] leading-relaxed drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)] ">
-        Хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц дасгалыг агуулсан Монголын анхны сайт.
-      </p>
-
-      {/* Button now on the left */}
-      <div className="pt-6 flex items-center gap-5">
-        <button
-          className="px-7 py-3 bg-[#0284c7] hover:bg-[#00a5600] text-white font-extrabold  rounded-full shadow-2xl hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] mt-4"
-          onClick={goToOptions}
+        <div
+          className="relative z-20 flex-1 flex flex-col items-center justify-end text-center px-4 pb-12"
+          style={{ paddingBottom: `calc(${CLOUD_H} + 0.5rem)` }}
         >
-          Туршилтын дасгал
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+          <div className="relative w-full max-w-7xl mx-auto">
+            {/* Left column – first 6/10 of the width, flex-col */}
+            <div className="w-[60%] max-w-xl flex flex-col items-start text-left">
+              <img
+                src="/images/texttt.png"
+                alt=""
+                className="w-full h-auto mb-4"
+              />
+              <p className="text-xl sm:text-2xl font-extrabold text-[#0a5600] leading-relaxed drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)] ">
+                Хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц дасгалыг агуулсан Монголын анхны сайт.
+              </p>
+
+              {/* Button now on the left */}
+              <div className="pt-6 flex items-center gap-5">
+                <button
+                  className="px-7 py-3 bg-[#0284c7] hover:bg-[#00a5600] text-white font-extrabold  rounded-full shadow-2xl hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] mt-4"
+                  onClick={goToOptions}
+                >
+                  Туршилтын дасгал
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Clouds footer — lowered + watercolor treatment, no sheep */}
         <Clouds

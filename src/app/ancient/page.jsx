@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Manrope } from "next/font/google";
 // import "../../dashboard/dashboard.css";
 import "./ancient.css";
-import { supabase } from '@/lib/supabase'
+import { supabase } from "../../lib/supabase";
 
 const manrope = Manrope({ subsets: ["latin", "cyrillic"], weight: ["500", "600", "700", "800"] });
 

@@ -1,4 +1,4 @@
-const topicPaths = ["/ancient", "/grammar", "/words", "/idioms", "/script"];
+const topicPaths = ["/ancient", "/grammar", "/words", "/idioms", "/script", "/uran-zohiol"];
 
 export const mainNav = [
   { label: "Нүүр", icon: "🏠", href: "/myclass/dashboard" },
@@ -14,5 +14,6 @@ export const topics = [
   { label: "Журамласан үг", icon: "🗣️", href: "/vg", desc: "Журамласан үгсийг зөв хэрэглэх нь", lessons: 18 },
   { label: "Хэлц үг", icon: "💬", href: "/idioms", desc: "Өдөр тутмын яриан дахь хэлц, зүйр цэцэн үг", lessons: 15, badge: "Шинэ" },
   { label: "Монгол бичиг", icon: "🖋️", href: "/script", desc: "Уламжлалт босоо бичгийг эхнээс нь сурах", lessons: 20 },
-  { label: "Эртний үг", icon: "📜", href: "/ancient", desc: "Эртний монгол үгс, тэдгээрийн утга ба хэрэглээ", lessons: 12 },
+  { label: "Эртний үг", icon: "📜", href: "/ancient", desc: "Эртний монгол үгс, тэдгээрийн утга ба хэрэглээ", lessons: 4 },
+  { label: "Уран зохиол", icon: "📖", href: "/uran-zohiol", desc: "Уран зохиолын нэр томьёо, зохиол бүтээлүүд", lessons: 10 },
 ];

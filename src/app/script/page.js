@@ -5,10 +5,15 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import AppShell from '../myclass/components/AppShell'
 
-const TABLE = 'mongolian_grammar'
-const TYPE_COL = 'grammar_type'
-const DESC_COL = 'description'
+const TABLE = 'mongolian_script_words'
 
+// Leave these empty to auto-detect (first two columns after id).
+// If the wrong columns are picked, type the real column names here,
+// e.g. const A_COL = 'script' and const B_COL = 'meaning'
+const A_COL = ''
+const B_COL = ''
+
+const SKIP = new Set(['id', 'created_at', 'updated_at'])
 const ROUND_SIZE = 10
 
 const css = `
@@ -21,18 +26,16 @@ const css = `
 .search{width:100%;box-sizing:border-box;margin-bottom:12px;padding:12px 18px;border-radius:16px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-size:16px;outline:none}
 .search:focus{border-color:#0284c7}
 .count{opacity:.7;font-size:14px;font-weight:700;margin:0 0 14px}
-.rules{display:grid;gap:14px}
-.rule-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
-.rule-title{font-size:18px;font-weight:800;line-height:1.35;margin:0}
-.rule-sec{flex-shrink:0;padding:3px 12px;border-radius:999px;background:rgba(2,132,199,.18);color:#0284c7;font-weight:800;font-size:13px}
-.rule-desc{margin:0;line-height:1.65;opacity:.85}
+.words{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.word-main{font-size:24px;font-weight:800;margin:0 0 8px;word-break:break-word}
+.word-sub{margin:0;line-height:1.6;opacity:.85}
 .qz-bar{height:8px;border-radius:999px;background:rgba(128,128,128,.25);overflow:hidden;margin:12px 0 20px}
 .qz-bar>div{height:100%;background:#0284c7;transition:width .3s}
 .qz-meta{display:flex;justify-content:space-between;font-weight:800;font-size:14px}
 .qz-label{opacity:.7;font-size:14px;margin:0 0 4px}
-.qz-prompt{font-size:18px;font-weight:800;line-height:1.5;margin:0 0 20px}
+.qz-prompt{font-size:24px;font-weight:800;line-height:1.4;margin:0 0 20px;word-break:break-word}
 .qz-opts{display:grid;gap:10px}
-.qz-opt{width:100%;text-align:left;padding:14px 18px;border-radius:16px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-size:15px;line-height:1.4;font-weight:800;cursor:pointer;transition:all .2s}
+.qz-opt{width:100%;text-align:left;padding:14px 18px;border-radius:16px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-size:16px;line-height:1.4;font-weight:800;cursor:pointer;transition:all .2s}
 .qz-opt:hover:not(:disabled){background:rgba(128,128,128,.12)}
 .qz-opt:disabled{cursor:default}
 .qz-opt.ok{background:rgba(34,197,94,.18);border-color:#22c55e}
@@ -54,49 +57,34 @@ function shuffle(arr) {
   return a
 }
 
-// "Нэр (§32.1)" -> "Нэр"
-const cleanTitle = (t) => t.replace(/\s*\(§[^)]*\)\s*$/, '')
-
-// "Нэр (§32.1)" -> "§32.1"
-const sectionOf = (t) => {
-  const m = t.match(/\(§([^)]*)\)\s*$/)
-  return m ? `§${m[1]}` : ''
-}
-
-// Sort key from the section number, e.g. §28.1-гажилт -> 28.1
-const sortKey = (t) => {
-  const m = t.match(/§(\d+)(?:\.(\d+))?/)
-  if (!m) return 9999
-  return Number(m[1]) + (m[2] ? Number(m[2]) / 100 : 0)
-}
-
-// Show the rule description, pick the right rule name out of 4
-function buildRound(rows) {
+// Show one column, pick the matching value of the other column out of 4
+function buildRound(rows, promptCol, answerCol) {
   return shuffle(rows)
     .slice(0, ROUND_SIZE)
     .map((r) => {
-      const answer = cleanTitle(r[TYPE_COL])
       const wrong = [
         ...new Set(
           shuffle(rows)
-            .map((x) => cleanTitle(x[TYPE_COL]))
-            .filter((t) => t !== answer)
+            .map((x) => String(x[answerCol]))
+            .filter((v) => v !== String(r[answerCol]))
         ),
       ].slice(0, 3)
       return {
-        prompt: r[DESC_COL],
-        answer,
-        options: shuffle([answer, ...wrong]),
+        prompt: String(r[promptCol]),
+        answer: String(r[answerCol]),
+        options: shuffle([String(r[answerCol]), ...wrong]),
       }
     })
 }
 
-export default function GrammarPage() {
+export default function ScriptPage() {
   const [rows, setRows] = useState([])
+  const [cols, setCols] = useState({ a: '', b: '' })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const [mode, setMode] = useState('study') // 'study' | 'quiz'
+  const [flip, setFlip] = useState(false) // quiz direction
   const [query, setQuery] = useState('')
 
   const [questions, setQuestions] = useState([])
@@ -106,35 +94,54 @@ export default function GrammarPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase.from(TABLE).select('*')
+      const { data, error } = await supabase.from(TABLE).select('*').order('id')
 
       if (error) {
         setError(error.message)
       } else if (!data || data.length < 4) {
         setError(
-          'Өгөгдөл олдсонгүй. Supabase дээр mongolian_grammar хүснэгтэд SELECT (унших) policy байгаа эсэхээ шалгана уу.'
+          'Өгөгдөл олдсонгүй (эсвэл 4-өөс цөөн мөр байна). Supabase дээр mongolian_script_words хүснэгтэд SELECT (унших) policy байгаа эсэхээ шалгана уу.'
         )
       } else {
-        const sorted = [...data].sort(
-          (a, b) => sortKey(a[TYPE_COL]) - sortKey(b[TYPE_COL]) || a.id - b.id
-        )
-        setRows(sorted)
+        const keys = Object.keys(data[0]).filter((k) => !SKIP.has(k))
+        const a = A_COL || keys[0]
+        const b = B_COL || keys[1]
+        if (!a || !b || !(a in data[0]) || !(b in data[0])) {
+          setError(
+            `Баганын нэр таарахгүй байна. Таны хүснэгтийн баганууд: ${Object.keys(
+              data[0]
+            ).join(', ')}. Файлын дээд талын A_COL болон B_COL-г засна уу.`
+          )
+        } else {
+          setCols({ a, b })
+          setRows(data)
+        }
       }
       setLoading(false)
     }
     load()
   }, [])
 
+  const promptCol = flip ? cols.b : cols.a
+
   const q = questions[idx]
   const finished = mode === 'quiz' && questions.length > 0 && idx >= questions.length
   const ready = !loading && !error
 
-  const startQuiz = () => {
-    setQuestions(buildRound(rows))
+  const startQuiz = (flipValue = flip) => {
+    const p = flipValue ? cols.b : cols.a
+    const a = flipValue ? cols.a : cols.b
+    setQuestions(buildRound(rows, p, a))
     setIdx(0)
     setSelected(null)
     setScore(0)
     setMode('quiz')
+  }
+
+  const toggleFlip = () => {
+    const nf = !flip
+    setFlip(nf)
+    startQuiz(nf)
   }
 
   const choose = (option) => {
@@ -152,8 +159,8 @@ export default function GrammarPage() {
     const s = query.trim().toLowerCase()
     if (!s) return true
     return (
-      r[TYPE_COL].toLowerCase().includes(s) ||
-      r[DESC_COL].toLowerCase().includes(s)
+      String(r[cols.a] ?? '').toLowerCase().includes(s) ||
+      String(r[cols.b] ?? '').toLowerCase().includes(s)
     )
   })
 
@@ -167,11 +174,11 @@ export default function GrammarPage() {
 
       <div className="top">
         <div>
-          <h1>Зөв бичих дүрэм</h1>
+          <h1>Монгол бичиг</h1>
           <p className="lead">
             {mode === 'study'
-              ? 'Дүрмүүдийг уншаад шалгалт өгөөрэй'
-              : 'Тайлбарт тохирох дүрмийг сонго'}
+              ? 'Үгсийг уншаад шалгалт өгөөрэй'
+              : 'Зөв хариултыг сонго'}
           </p>
         </div>
       </div>
@@ -196,14 +203,19 @@ export default function GrammarPage() {
             onClick={() => setMode('study')}
             className={`tab ${mode === 'study' ? 'on' : ''}`}
           >
-            Дүрэм үзэх
+            Үгс үзэх
           </button>
           <button
-            onClick={startQuiz}
+            onClick={() => startQuiz()}
             className={`tab ${mode === 'quiz' ? 'on' : ''}`}
           >
             Шалгалт
           </button>
+          {mode === 'quiz' && (
+            <button onClick={toggleFlip} className="tab">
+              Чиглэл солих
+            </button>
+          )}
         </div>
       )}
 
@@ -214,29 +226,24 @@ export default function GrammarPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Дүрэм хайх"
-            aria-label="Дүрэм хайх"
+            placeholder="Хайх"
+            aria-label="Хайх"
             className="search"
           />
           <p className="count">
-            {filtered.length} / {rows.length} дүрэм
+            {filtered.length} / {rows.length}
           </p>
 
-          <div className="rules">
+          <div className="words">
             {filtered.map((r) => (
               <div key={r.id} className="panel">
-                <div className="rule-head">
-                  <p className="rule-title">{cleanTitle(r[TYPE_COL])}</p>
-                  {sectionOf(r[TYPE_COL]) && (
-                    <span className="rule-sec">{sectionOf(r[TYPE_COL])}</span>
-                  )}
-                </div>
-                <p className="rule-desc">{r[DESC_COL]}</p>
+                <p className="word-main">{String(r[cols.a])}</p>
+                <p className="word-sub">{String(r[cols.b])}</p>
               </div>
             ))}
             {filtered.length === 0 && (
               <div className="panel" style={{ textAlign: 'center' }}>
-                Дүрэм олдсонгүй. Өөр түлхүүр үгээр хайгаарай.
+                Олдсонгүй. Өөр үгээр хайгаарай.
               </div>
             )}
           </div>
@@ -256,7 +263,7 @@ export default function GrammarPage() {
             <div style={{ width: `${(idx / questions.length) * 100}%` }} />
           </div>
 
-          <p className="qz-label">Тайлбар:</p>
+          <p className="qz-label">{promptCol}:</p>
           <p className="qz-prompt">{q.prompt}</p>
 
           <div className="qz-opts">
@@ -307,10 +314,10 @@ export default function GrammarPage() {
               ? 'Төгс! Бүгдийг зөв хариуллаа.'
               : score >= questions.length / 2
               ? 'Сайн байна! Дахин оролдоод үзээрэй.'
-              : 'Дүрмүүдийг дахин уншаад оролдоорой.'}
+              : 'Дахин дасгал хийж үзээрэй.'}
           </p>
           <div className="qz-actions">
-            <button onClick={startQuiz} className="btn">
+            <button onClick={() => startQuiz()} className="btn">
               Дахин тоглох
             </button>
             <button
@@ -318,7 +325,7 @@ export default function GrammarPage() {
               className="back-btn"
               style={{ marginBottom: 0 }}
             >
-              Дүрэм үзэх
+              Үгс үзэх
             </button>
           </div>
         </div>

@@ -15,7 +15,7 @@ export default function LessonsPage() {
 
       <div className="cards">
         {topics.map((t) => (
-          <Link key={t.href} href={t.href} className="tcard">
+          <Link key={`${t.href}-${t.label}`} href={t.href} className="tcard">
             <span className="tcard-ic" aria-hidden="true">
               {t.icon}
             </span>

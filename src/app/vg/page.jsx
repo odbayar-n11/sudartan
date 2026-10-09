@@ -40,6 +40,25 @@ export default function QuizSetsPage() {
 
   return (
     <AppShell userName="y/n">
+
+            <Link
+        href="/myclass/lessons"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          marginBottom: '16px',
+          padding: '8px 16px',
+          borderRadius: '999px',
+          border: '2px solid rgba(128,128,128,.3)',
+          color: 'inherit',
+          fontWeight: 800,
+          fontSize: '14px',
+          textDecoration: 'none',
+        }}
+      >
+        ← Хичээлүүд рүү буцах
+      </Link>
       {/* Header Banner */}
       <div className="top">
         <div>

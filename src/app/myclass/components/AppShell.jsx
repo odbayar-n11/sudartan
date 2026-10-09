@@ -23,7 +23,10 @@ export default function AppShell({ userName = "y/n", children }) {
   return (
     <div className={`app ${manrope.className}`}>
       <aside className="sidebar">
-        <div className="logo"><img src="/images/logo.png" alt="" width="40" height="40" />Судартан</div>
+        <Link href="http://localhost:3000/" className="logo" aria-label="Судартан — нүүр хуудас">
+  <img src="/images/logo.png" alt="" width="40" height="40" />
+  Судартан
+</Link>
         <nav aria-label="Үндсэн цэс">
           {mainNav.map((i) => <NavLink key={i.href} item={i} />)}
         </nav>

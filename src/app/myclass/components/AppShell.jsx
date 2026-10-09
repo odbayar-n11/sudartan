@@ -28,11 +28,9 @@ export default function AppShell({ userName = "y/n", children }) {
           {mainNav.map((i) => <NavLink key={i.href} item={i} />)}
         </nav>
         <div className="grow" />
-        <div className="upg">Pro болох <b>40% хямдрал</b></div>
         <div className="me"><i aria-hidden />{userName}</div>
       </aside>
       <main>
-        <div className="promo">Онцгой хямдрал 40% <button>Авах</button></div>
         <div className="wrap">{children}</div>
       </main>
     </div>

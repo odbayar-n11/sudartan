@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Nunito, Irish_Grover, } from "next/font/google";
+import { Nunito, Irish_Grover } from "next/font/google";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
 import { supabase } from "@/lib/supabase";
@@ -24,8 +24,6 @@ const irishGrover = Irish_Grover({
   variable: "--font-irish",
 });
 
-// Order matches the reference: Contact, Service, Portfolio, About, Home —
-// with Home styled as the active/current page.
 const NAV_LINKS = [
   { href: "#contact", label: "Холбоо барих" },
   { href: "#offer", label: "Үйлчилгээ" },
@@ -34,6 +32,8 @@ const NAV_LINKS = [
   { href: "#home", label: "Нүүр", active: true },
 ];
 
+const NAV_ORDER = [...NAV_LINKS].reverse();
+
 const STATS = [
   { value: "...", label: "Суралцагч" },
   { value: "...", label: "Хичээл" },
@@ -41,7 +41,6 @@ const STATS = [
   { value: "...", label: "Сэтгэл ханамж" },
 ];
 
-// `icon` is the sheep's accessory
 const OFFERS = [
   {
     title: "Үгийн сан",
@@ -94,59 +93,10 @@ const FOUNDERS = [
 
 const AVATAR_BG = ["#38BDF8", "#0284C7", "#0ea5e9", "#7dd3fc", "#0369a1"];
 
-/* ───────────── Sheep (mascot) ───────────── */
-
 const BODY = [
   [40, 58, 24], [62, 40, 27], [90, 36, 28], [115, 46, 25],
   [50, 76, 22], [78, 74, 26], [104, 72, 24],
 ];
-
-function Sheep({ className = "", label }) {
-  return (
-    <svg
-      viewBox="0 0 160 120"
-      className={className}
-      role={label ? "img" : undefined}
-      aria-label={label}
-      aria-hidden={label ? undefined : true}
-    >
-      <g fill="#1e293b">
-        <rect x="52" y="86" width="9" height="26" rx="4.5" />
-        <rect x="72" y="88" width="9" height="24" rx="4.5" />
-        <rect x="94" y="88" width="9" height="24" rx="4.5" />
-        <rect x="112" y="86" width="9" height="26" rx="4.5" />
-      </g>
-      <g fill="#bae6fd">
-        {BODY.map(([x, y, r]) => <circle key={`o${x}${y}`} cx={x} cy={y} r={r + 2} />)}
-      </g>
-      <g fill="#FDFCFC">
-        {BODY.map(([x, y, r]) => <circle key={`i${x}${y}`} cx={x} cy={y} r={r} />)}
-      </g>
-      <g fill="#1e293b">
-        <ellipse cx="121" cy="51" rx="11" ry="5" transform="rotate(-25 121 51)" />
-        <ellipse cx="151" cy="49" rx="11" ry="5" transform="rotate(25 151 49)" />
-        <ellipse cx="136" cy="62" rx="17" ry="20" />
-      </g>
-      <circle cx="136" cy="43" r="12" fill="#bae6fd" />
-      <circle cx="136" cy="43" r="10" fill="#FDFCFC" />
-      <g fill="#FDFCFC">
-        <circle cx="130" cy="61" r="3.6" />
-        <circle cx="143" cy="61" r="3.6" />
-      </g>
-      <g fill="#1e293b">
-        <circle cx="130.8" cy="61.4" r="1.8" />
-        <circle cx="143.8" cy="61.4" r="1.8" />
-      </g>
-      <g fill="#f43f5e">
-        <ellipse cx="136.5" cy="72" rx="5" ry="3" />
-        <circle cx="125" cy="69" r="2.8" opacity=".7" />
-        <circle cx="148" cy="69" r="2.8" opacity=".7" />
-      </g>
-    </svg>
-  );
-}
-
-
 
 const ACCESSORIES = {
   pencil: <path d="M44 55l1-4 7-7 3 3-7 7z" fill="#fff" />,
@@ -173,7 +123,6 @@ const ACCESSORIES = {
   ),
 };
 
-// Small sheep face
 function SheepHead({ acc, className = "" }) {
   const wool = [[20, 24, 11], [32, 18, 13], [44, 24, 11], [26, 32, 10], [38, 32, 10]];
   return (
@@ -206,8 +155,6 @@ function SheepHead({ acc, className = "" }) {
   );
 }
 
-/* ───────────── Clouds ───────────── */
-
 const FRONT = [
   [30, 140, 46], [120, 128, 62], [235, 142, 48], [330, 118, 72], [450, 140, 52],
   [545, 126, 66], [660, 144, 46], [760, 112, 76], [880, 138, 54], [975, 124, 68],
@@ -232,9 +179,7 @@ function Clouds({ fill, back, accent, flip = false, className = "", children }) 
       <svg
         viewBox="0 0 1440 200"
         className="relative block h-auto max-w-none w-[max(100%,1000px)] left-1/2 -translate-x-1/2"
-        style={{
-          filter: "drop-shadow(0 -3px 6px white blur(1.2px)",
-        }}
+        style={{ filter: "drop-shadow(0 -3px 6px white blur(1.2px)" }}
       >
         {back && (
           <g opacity="0.75">
@@ -250,20 +195,6 @@ function Clouds({ fill, back, accent, flip = false, className = "", children }) 
         </g>
       </svg>
     </div>
-  );
-}
-
-const NAV_ORDER = [...NAV_LINKS].reverse();
-
-function SheepAvatar({ bg, className = "", delay = "0s" }) {
-  return (
-    <span
-      className={`sheep-float absolute rounded-full flex items-center justify-center ${className}`}
-      style={{ background: bg, animationDelay: delay }}
-      aria-hidden="true"
-    >
-      <SheepHead className="w-4/5 h-4/5" />
-    </span>
   );
 }
 
@@ -307,7 +238,6 @@ export default function Home() {
     router.push("/options");
   };
 
-
   return (
     <main
       className={`${display.variable} ${body.variable} ${irishGrover.variable} min-h-screen bg-[#FDFCFC] text-[#0f172a] overflow-x-hidden`}
@@ -328,12 +258,12 @@ export default function Home() {
         }
       `}</style>
 
-      {/* HERO — Fullscreen Crystal Clear Image Background */}
+      {/* HERO SECTION */}
       <section
         id="home"
-        className="relative min-h-screen flex flex-col justify-between overflow-hidden bg-[#f4f1ea]"
+        className="relative min-h-screen flex flex-col justify-between overflow-hidden bg-[#f4f1ea] pt-28 sm:pt-32"
       >
-        {/* Full-screen Background Image — Sharp and Unblurred, full aspect ratio */}
+        {/* Full-screen Background Image */}
         <div className="absolute inset-0 z-0">
           <img
             src="/images/hero.jpg"
@@ -342,116 +272,107 @@ export default function Home() {
           />
         </div>
 
-        {/* HERO HEADER */}
-        <div className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-12">
-          <nav className="relative flex items-center justify-between gap-6 lg:gap-8 py-6 text-sm">
-            <div className="flex items-center gap-2.5 shrink-0 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-md border border-white/60">
-              <img src="/images/logo.png" className="w-8 h-8 object-contain" alt="Sudartan Logo" />
-              <span className="font-extrabold  text-[#0284c7] font-[family-name:var(--font-display)] tracking-wide leading-none">
-                СУДАРТАН
-              </span>
-            </div>
+        {/* FIXED HEADER */}
+        <header className="fixed top-0 inset-x-0 z-50 w-full bg-white/20 backdrop-blur-md transition-all duration-300">
+          <div className="max-w-7xl mx-auto px-6 sm:px-12">
+            <nav className="relative flex flex-col sm:flex-row items-center justify-between gap-6 lg:gap-8 py-4 text-sm">
+              <div className="flex items-center justify-between w-full sm:w-auto">
+                <div className="flex items-center gap-2.5 shrink-0 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-md border border-white/60">
+                  <img src="/images/logo.png" className="w-8 h-8 object-contain" alt="Sudartan Logo" />
+                  <span className="font-extrabold text-[#0284c7] font-[family-name:var(--font-display)] tracking-wide leading-none">
+                    СУДАРТАН
+                  </span>
+                </div>
 
-            <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center gap-6 lg:gap-8 bg-white/85 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/80 shadow-md">
-              {NAV_ORDER.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => smoothScroll(e, link.href)}
-                  className={`relative pb-0.5 transition-colors duration-300 ease-out ${
-                    link.active
-                      ? "text-[#0284c7] font-bold"
-                      : "text-[#334155] font-semibold hover:text-[#0284c7]"
-                  }`}
+                <button
+                  aria-label="Цэс"
+                  className="sm:hidden text-2xl text-[#0284c7] p-2 bg-white/80 rounded-full shadow-md"
+                  onClick={() => setMenuOpen(!menuOpen)}
                 >
-                  {link.label}
-                </a>
-              ))}
-            </div>
+                  {menuOpen ? "✕" : "☰"}
+                </button>
+              </div>
 
-            {/* AUTH BUTTONS (desktop) */}
-            <div className="flex items-center gap-4 min-h-[44px]">
-              {!authLoading && (
-                user ? (
-                  <>
-                    <Link
-                      href="/myclass/dashboard"
-                      className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
+              <div className="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center gap-6 lg:gap-8 bg-white/85 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/80 shadow-md">
+                {NAV_ORDER.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={(e) => smoothScroll(e, link.href)}
+                    className={`relative pb-0.5 transition-colors duration-300 ease-out ${
+                      link.active
+                        ? "text-[#0284c7] font-bold"
+                        : "text-[#334155] font-semibold hover:text-[#0284c7]"
+                    }`}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+
+              {/* AUTH BUTTONS (desktop) */}
+              <div className="hidden sm:flex items-center gap-4 min-h-[44px]">
+                {!authLoading && (
+                  user ? (
+                    <>
+                      <Link className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg" href="/myclass/dashboard">
+                        Миний анги
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-white/90 hover:bg-white text-[#0284c7] font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
+                      >
+                        Гарах
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg" href="/signup">
+                        Бүртгүүлэх
+                      </Link>
+
+                      <Link className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg" href="/signin">
+                        Нэвтрэх
+                      </Link>
+                    </>
+                  )
+                )}
+              </div>
+
+              {/* MOBILE MENU */}
+              {menuOpen && (
+                <div className="w-full sm:hidden rounded-[30px] bg-[#0284c7] p-4 flex flex-col gap-1 border border-[#7dd3fc]/40 shadow-lg mt-2">
+                  {NAV_ORDER.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      onClick={(e) => smoothScroll(e, link.href)}
+                      className={`px-3 py-2.5 rounded-2xl transition-colors duration-300 ${
+                        link.active
+                          ? "text-white font-bold bg-[#0369a1]"
+                          : "text-[#e0f2fe] font-semibold hover:bg-[#0369a1]"
+                      }`}
                     >
-                      Миний анги
-                    </Link>
+                      {link.label}
+                    </a>
+                  ))}
+                  {user ? (
                     <button
                       onClick={handleLogout}
-                      className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-white/90 hover:bg-white text-[#0284c7] font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
+                      className="mt-2 w-full py-2.5 rounded-full bg-white text-[#0284c7] font-extrabold"
                     >
                       Гарах
                     </button>
-                  </>
-                ) : (
-                  <>
-                    {/* Бүртгүүлэх (Sign Up) */}
-                    <Link
-                      href="/signup"
-                      className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
-                    >
-                      Бүртгүүлэх
-                    </Link>
-
-                    {/* Нэвтрэх (Sign In) */}
-                    <Link
-                      href="/signin"
-                      className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-extrabold transition-colors duration-300 shrink-0 shadow-lg"
-                    >
+                  ) : (
+                    <Link className="mt-2 w-full py-2.5 rounded-full bg-white text-[#0284c7] font-extrabold text-center block" href="/signin">
                       Нэвтрэх
                     </Link>
-                  </>
-                )
+                  )}
+                </div>
               )}
-            </div>
-
-            <button
-              aria-label="Цэс"
-              className="sm:hidden text-2xl text-[#0284c7] p-2 bg-white/80 rounded-full shadow-md"
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              {menuOpen ? "✕" : "☰"}
-            </button>
-          </nav>
-
-          {menuOpen && (
-            <div className="sm:hidden rounded-[30px] bg-[#0284c7] p-4 flex flex-col gap-1 border border-[#7dd3fc]/40 shadow-lg">
-              {NAV_ORDER.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => smoothScroll(e, link.href)}
-                  className={`px-3 py-2.5 rounded-2xl transition-colors duration-300 ${
-                    link.active
-                      ? "text-white font-bold bg-[#0369a1]"
-                      : "text-[#e0f2fe] font-semibold hover:bg-[#0369a1]"
-                  }`}
-                >
-                  {link.label}
-                </a>
-              ))}
-              {user ? (
-                <button
-                  onClick={handleLogout}
-                  className="mt-2 w-full py-2.5 rounded-full bg-white text-[#0284c7] font-extrabold"
-                >
-                  Гарах
-                </button>
-              ) : (
-                <Link
-                  href="/signin"
-                  className="mt-2 w-full py-2.5 rounded-full bg-white text-[#0284c7] font-extrabold text-center block"
-                >
-                  Нэвтрэх
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
+            </nav>
+          </div>
+        </header>
 
         {/* HERO CENTER CONTENT */}
         <div
@@ -459,21 +380,19 @@ export default function Home() {
           style={{ paddingBottom: `calc(${CLOUD_H} + 0.5rem)` }}
         >
           <div className="relative w-full max-w-7xl mx-auto">
-            {/* Left column – first 6/10 of the width, flex-col */}
             <div className="w-[60%] max-w-xl flex flex-col items-start text-left">
               <img
                 src="/images/texttt.png"
                 alt=""
                 className="w-full h-auto mb-4"
               />
-              <p className="text-xl sm:text-2xl font-extrabold text-[#0a5600] leading-relaxed drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)] ">
+              <p className="text-xl sm:text-2xl font-extrabold text-[#0a5600] leading-relaxed drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)]">
                 Хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц дасгалыг агуулсан Монголын анхны сайт.
               </p>
 
-              {/* Button now on the left */}
               <div className="pt-6 flex items-center gap-5">
                 <button
-                  className="px-7 py-3 bg-[#0284c7] hover:bg-[#00a5600] text-white font-extrabold  rounded-full shadow-2xl hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] mt-4"
+                  className="px-7 py-3 bg-[#0284c7] hover:bg-[#00a5600] text-white font-extrabold rounded-full shadow-2xl hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7] mt-4"
                   onClick={goToOptions}
                 >
                   Туршилтын дасгал
@@ -483,31 +402,19 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Clouds footer — lowered + watercolor treatment, no sheep */}
-        <Clouds
-          fill="#FDFCFC"
-          back="#bae6fd"
-          accent="#7dd3fc"
-          className="absolute bottom-0 inset-x-0 z-10 -mb-px translate-y-16"
-        />
+        <Clouds accent="#7dd3fc" back="#bae6fd" className="absolute bottom-0 inset-x-0 z-10 -mb-px translate-y-16" fill="#FDFCFC"/>
       </section>
 
       {/* ABOUT */}
       <section id="about" className="bg-[#FDFCFC]">
         <div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-14 items-center">
           <div className="space-y-5">
-            <h2 className={`${H2} text-[#0f172a]`}>
-              Бидний тухай
-            </h2>
+            <h2 className={`${H2} text-[#0f172a]`}>Бидний тухай</h2>
             <p className="text-[#475569] leading-relaxed max-w-lg">
-              Судартан нь монгол хэлний зөв бичих дүрэм, үгийн сан, үндэсний монгол бичгийг нэг дороос сурах боломжийг олгодог платформ юм. Бид
-              монгол хэлний багш нартай хамтран хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц талбарыг үүсгэлээ.
+              Судартан нь монгол хэлний зөв бичих дүрэм, үгийн сан, үндэсний монгол бичгийг нэг дороос сурах боломжийг олгодог платформ юм. Бид монгол хэлний багш нартай хамтран хэл бичгийн элсэлтийн шалгалтад бэлдэх цогц талбарыг үүсгэлээ.
             </p>
             <p className="text-[#475569] leading-relaxed max-w-lg">
-              Цаг ирэх тусам хэл бичгийн шалгалтын оноо буурч, жил бүр 5000-10000 сурагч хэл бичгийн элсэлтийн шалгалтдаа
-              400-аас доош оноо авч их сургуульд элсэн орох боломжоо алдаж байна. Эдгээр болон бусад хүүхдүүдэд хэл бичгийн
-              элсэлтийн шалгалтандаа бэлдэж сайжрахад нь тусалж, цаашлаад монголын соёлын амин сүнс нь болсон эх хэлийнхээ ач
-              холбогдолыг танин мэдүүлэх нь бидний зорилго билээ.
+              Цаг ирэх тусам хэл бичгийн шалгалтын оноо буурч, жил бүр 5000-10000 сурагч хэл бичгийн элсэлтийн шалгалтдаа 400-аас доош оноо авч их сургуульд элсэн орох боломжоо алдаж байна. Эдгээр болон бусад хүүхдүүдэд хэл бичгийн элсэлтийн шалгалтандаа бэлдэж сайжрахад нь тусалж, цаашлаад монголын соёлын амин сүнс нь болсон эх хэлийнхээ ач холбогдолыг танин мэдүүлэх нь бидний зорилго билээ.
             </p>
           </div>
 
@@ -530,15 +437,12 @@ export default function Home() {
       {/* OFFER */}
       <section id="offer" className="relative bg-[#e0f2fe] overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,#38bdf8_0%,transparent_55%)] opacity-70" />
-        <Clouds fill="#FDFCFC" flip className="absolute top-0 inset-x-0 -mt-px" />
+        <Clouds className="absolute top-0 inset-x-0 -mt-px" fill="#FDFCFC" flip/>
         <div className="relative max-w-7xl mx-auto px-6" style={{ paddingTop: `calc(${CLOUD_H} + 3rem)`, paddingBottom: `calc(${CLOUD_H} + 3rem)` }}>
           <div className="max-w-lg mb-12">
-            <h2 className={`${H2} text-white`}>
-              Бидний үйлчилгээ
-            </h2>
+            <h2 className={`${H2} text-white`}>Бидний үйлчилгээ</h2>
             <p className="text-[#ffffff] mt-3 leading-relaxed">
-              Дөрвөн үндсэн чиглэлээр эх хэлнийхээ мэдлэгийг системтэйгээр
-              дээшлүүлээрэй.
+              Дөрвөн үндсэн чиглэлээр эх хэлнийхээ мэдлэгийг системтэйгээр дээшлүүлээрэй.
             </p>
           </div>
 
@@ -549,7 +453,7 @@ export default function Home() {
                 className="rounded-[30px] bg-[#ffffff] backdrop-blur-md border border-white/20 p-6 hover:border-white/60 transition-colors duration-300"
               >
                 <span className="w-16 h-16 rounded-full bg-[#01993e] flex items-center justify-center mb-5 shadow-inner">
-                  <SheepHead acc={offer.icon} className="w-12 h-12" />
+                  <SheepHead acc="{offer.icon}" className="w-12 h-12"/>
                 </span>
                 <h3 className="font-extrabold text-[#0a5600] text-xl mb-2 font-[family-name:var(--font-display)]">
                   {offer.title}
@@ -561,19 +465,13 @@ export default function Home() {
             ))}
           </div>
         </div>
-        <Clouds
-          fill="#FDFCFC"
-          back="#bae6fd"
-          className="absolute bottom-0 inset-x-0 -mb-px"
-        />
+        <Clouds back="#bae6fd" className="absolute bottom-0 inset-x-0 -mb-px" fill="#FDFCFC"/>
       </section>
 
       {/* FAQ */}
       <section id="faq" className="bg-[#FDFCFC]">
         <div className="max-w-3xl mx-auto px-6 py-20">
-          <h2 className={`${H2} text-[#0f172a] mb-12`}>
-            Асуулт & хариулт
-          </h2>
+          <h2 className={`${H2} text-[#0f172a] mb-12`}>Асуулт & хариулт</h2>
 
           <div className="space-y-3">
             {FAQS.map((item, idx) => {
@@ -589,9 +487,7 @@ export default function Home() {
                     onClick={() => setOpenFaq(isOpen ? -1 : idx)}
                     className="w-full flex items-center justify-between gap-4 py-5 text-left"
                   >
-                    <span className="font-bold text-[#0c4a6e]">
-                      {item.q}
-                    </span>
+                    <span className="font-bold text-[#0c4a6e]">{item.q}</span>
                     <span
                       className={`shrink-0 w-8 h-8 rounded-full bg-[#42db00] flex items-center justify-center font-bold text-white transition-transform duration-300 ${
                         isOpen ? "rotate-45" : ""
@@ -612,14 +508,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOUNDERS — Larger pictures */}
+      {/* FOUNDERS */}
       <section id="founders" className="relative bg-[#e0f2fe]">
-        <Clouds fill="#FDFCFC" flip className="absolute top-0 inset-x-0 -mt-px" />
+        <Clouds className="absolute top-0 inset-x-0 -mt-px" fill="#FDFCFC" flip/>
         <div className="max-w-7xl mx-auto px-6" style={{ paddingTop: `calc(${CLOUD_H} + 3rem)`, paddingBottom: `calc(${CLOUD_H} + 3rem)` }}>
           <div className="max-w-lg mb-12 mx-auto text-center">
-            <h2 className={`${H2} text-[#0c4a6e]`}>
-              Үүсгэн байгуулагчид
-            </h2>
+            <h2 className={`${H2} text-[#0c4a6e]`}>Үүсгэн байгуулагчид</h2>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
@@ -631,7 +525,7 @@ export default function Home() {
                   role="img"
                   aria-label={founder.name}
                 >
-                  <SheepHead className="w-28 h-28 sm:w-36 sm:h-36" />
+                  <SheepHead className="w-28 h-28 sm:w-36 sm:h-36"/>
                 </span>
                 <p className="font-extrabold text-[#0c4a6e] text-lg font-[family-name:var(--font-display)]">
                   {founder.name}
@@ -640,37 +534,34 @@ export default function Home() {
             ))}
           </div>
         </div>
-        <Clouds fill="#FDFCFC" className="absolute bottom-0 inset-x-0 -mb-px" />
+        <Clouds className="absolute bottom-0 inset-x-0 -mb-px" fill="#FDFCFC"/>
       </section>
 
       {/* CONTACT */}
       <section id="contact" className="bg-[#FDFCFC]">
         <div className="max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-14">
           <div className="space-y-6">
-            <h2 className={`${H2} text-[#0f172a]`}>
-              Холбоо барих
-            </h2>
+            <h2 className={`${H2} text-[#0f172a]`}>Холбоо барих</h2>
             <p className="text-[#475569] leading-relaxed max-w-md">
-              Асуулт, санал хүсэлт байвал бидэнтэй чөлөөтэй холбогдоорой.
-              Ажлын өдрүүдэд бид 24 цагийн дотор хариу өгөхийг зорьдог.
+              Асуулт, санал хүсэлт байвал бидэнтэй чөлөөтэй холбогдоорой. Ажлын өдрүүдэд бид 24 цагийн дотор хариу өгөхийг зорьдог.
             </p>
 
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-3">
                 <span className="w-12 h-12 rounded-full bg-[#e0f2fe] flex items-center justify-center">
-                  <SheepHead acc="mail" className="w-9 h-9" />
+                  <SheepHead acc="mail" className="w-9 h-9"/>
                 </span>
                 <span className="text-[#0f172a] font-semibold">info@sudartan.mn</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="w-12 h-12 rounded-full bg-[#e0f2fe] flex items-center justify-center">
-                  <SheepHead acc="phone" className="w-9 h-9" />
+                  <SheepHead acc="phone" className="w-9 h-9"/>
                 </span>
                 <span className="text-[#0f172a] font-semibold">+976 7000 1234</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="w-12 h-12 rounded-full bg-[#e0f2fe] flex items-center justify-center">
-                  <SheepHead acc="pin" className="w-9 h-9" />
+                  <SheepHead acc="pin" className="w-9 h-9"/>
                 </span>
                 <span className="text-[#0f172a] font-semibold">
                   Сүхбаатар дүүрэг, Улаанбаатар хот
@@ -681,9 +572,7 @@ export default function Home() {
 
           <form className="space-y-4 bg-[#0284c7] rounded-[30px] p-7 sm:p-9 shadow-xl">
             <div>
-              <label className="block text-sm font-bold text-[#e0f2fe] mb-1.5">
-                Нэр
-              </label>
+              <label className="block text-sm font-bold text-[#e0f2fe] mb-1.5">Нэр</label>
               <input
                 type="text"
                 placeholder="Таны нэр"
@@ -691,9 +580,7 @@ export default function Home() {
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-[#e0f2fe] mb-1.5">
-                И-мэйл
-              </label>
+              <label className="block text-sm font-bold text-[#e0f2fe] mb-1.5">И-мэйл</label>
               <input
                 type="email"
                 placeholder="tanii@imeil.mn"
@@ -701,9 +588,7 @@ export default function Home() {
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-[#e0f2fe] mb-1.5">
-                Зурвас
-              </label>
+              <label className="block text-sm font-bold text-[#e0f2fe] mb-1.5">Зурвас</label>
               <textarea
                 rows={4}
                 placeholder="Бидэнд юу хэлэхийг хүсэж байна вэ?"
@@ -722,7 +607,7 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer className="relative bg-[#0284c7] pb-8" style={{ paddingTop: `calc(${CLOUD_H} + 2rem)` }}>
-        <Clouds fill="#FDFCFC" flip className="absolute top-0 inset-x-0 -mt-px" />
+        <Clouds className="absolute top-0 inset-x-0 -mt-px" fill="#FDFCFC" flip/>
         <div className="relative max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-[#bae6fd] text-sm font-semibold">
           <p>© {new Date().getFullYear()} Судартан. Бүх эрх хуулиар хамгаалагдсан.</p>
           <div className="flex gap-6">

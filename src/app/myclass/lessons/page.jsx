@@ -8,16 +8,23 @@ export default function LessonsPage() {
 
   return (
     <AppShell userName={userName}>
-      <h1>Хичээлүүд<small>Сэдвээ сонгоод суралцаж эхлээрэй</small></h1>
+      <h1>
+        Хичээлүүд
+        <small>Сэдвээ сонгоод суралцаж эхлээрэй</small>
+      </h1>
 
       <div className="cards">
         {topics.map((t) => (
           <Link key={t.href} href={t.href} className="tcard">
-            <span className="tcard-ic" aria-hidden>{t.icon}</span>
+            <span className="tcard-ic" aria-hidden="true">
+              {t.icon}
+            </span>
             {t.badge && <span className="pill tcard-badge">{t.badge}</span>}
-            <h3>{t.label}</h3>
+            <span className="tcard-title">{t.label}</span>
             <p>{t.desc}</p>
-            <span className="tcard-foot">{t.lessons} хичээл <b aria-hidden>→</b></span>
+            <span className="tcard-foot">
+              {t.lessons} хичээл <b aria-hidden="true">→</b>
+            </span>
           </Link>
         ))}
       </div>

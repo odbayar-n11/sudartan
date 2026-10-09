@@ -10,17 +10,6 @@ const stats = [
   { label: "Одоо идэвхтэй", value: "189", change: "4% өнөөдөр", trend: "up" },
 ];
 
-const customers = [
-  { id: 1, name: "Jane Cooper", company: "Microsoft", phone: "(225) 555-0118", email: "jane@microsoft.com", country: "United States", status: "Active" },
-  { id: 2, name: "Floyd Miles", company: "Yahoo", phone: "(205) 555-0100", email: "floyd@yahoo.com", country: "Kiribati", status: "Inactive" },
-  { id: 3, name: "Ronald Richards", company: "Adobe", phone: "(302) 555-0107", email: "ronald@adobe.com", country: "Israel", status: "Inactive" },
-  { id: 4, name: "Marvin McKinney", company: "Tesla", phone: "(252) 555-0126", email: "marvin@tesla.com", country: "Iran", status: "Active" },
-  { id: 5, name: "Jerome Bell", company: "Google", phone: "(629) 555-0129", email: "jerome@google.com", country: "Réunion", status: "Active" },
-  { id: 6, name: "Kathryn Murphy", company: "Microsoft", phone: "(406) 555-0120", email: "kathryn@microsoft.com", country: "Curaçao", status: "Active" },
-  { id: 7, name: "Jacob Jones", company: "Yahoo", phone: "(208) 555-0112", email: "jacob@yahoo.com", country: "Brazil", status: "Active" },
-  { id: 8, name: "Kristin Watson", company: "Facebook", phone: "(704) 555-0127", email: "kristin@facebook.com", country: "Åland Islands", status: "Inactive" },
-];
-
 /* ---------- Stats ---------- */
 function Stats() {
   return (
@@ -41,14 +30,6 @@ function CustomersTable() {
   const [query, setQuery] = useState("");
   const [order, setOrder] = useState("newest");
 
-  const rows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const filtered = customers.filter((c) =>
-      [c.name, c.company, c.email, c.country].some((v) => v.toLowerCase().includes(q))
-    );
-    return [...filtered].sort((a, b) => (order === "newest" ? a.id - b.id : b.id - a.id));
-  }, [query, order]);
-
   return (
     <div className="panel">
       <div className="ph">
@@ -59,33 +40,6 @@ function CustomersTable() {
             <option value="newest">Шинэ эхэндээ</option>
             <option value="oldest">Хуучин эхэндээ</option>
           </select>
-        </div>
-      </div>
-
-      <div className="tbl">
-        <table>
-          <thead>
-            <tr><th>Нэр</th><th>Компани</th><th>Утас</th><th>Имэйл</th><th>Улс</th><th>Төлөв</th></tr>
-          </thead>
-          <tbody>
-            {rows.map((c) => (
-              <tr key={c.id}>
-                <td>{c.name}</td><td>{c.company}</td><td>{c.phone}</td><td>{c.email}</td><td>{c.country}</td>
-                <td><span className={c.status === "Active" ? "st a" : "st i"}>{c.status}</span></td>
-              </tr>
-            ))}
-            {rows.length === 0 && <tr><td colSpan={6}>Илэрц олдсонгүй. Өөр түлхүүр үгээр хайгаарай.</td></tr>}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="pg">
-        <span>256K бичлэгээс 1–{rows.length} харуулж байна</span>
-        <div>
-          <button aria-label="Өмнөх">‹</button>
-          <button className="on">1</button>
-          <button>2</button><button>3</button><button>4</button><button>40</button>
-          <button aria-label="Дараах">›</button>
         </div>
       </div>
     </div>

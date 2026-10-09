@@ -2,7 +2,7 @@ const topicPaths = ["/ancient", "/grammar", "/words", "/idioms", "/script"];
 
 export const mainNav = [
   { label: "Нүүр", icon: "🏠", href: "/myclass/dashboard" },
-  { label: "Хичээлүүд", icon: "🎓", href: "/myclass/lessons", also: topicPaths }, // stays highlighted inside topic pages
+  { label: "Дасгалууд", icon: "🎓", href: "/myclass/lessons", also: topicPaths }, // stays highlighted inside topic pages
   { label: "Төлөвлөгөө", icon: "📅", href: "/myclass/plan" },
   { label: "Статистик", icon: "📊", href: "/myclass/stats" },
   { label: "Хадгалсан", icon: "🔖", href: "/myclass/saved" },

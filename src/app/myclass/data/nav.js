@@ -10,9 +10,9 @@ export const mainNav = [
 
 // lesson counts are placeholders - replace with real data
 export const topics = [
-  { label: "Эртний үг", icon: "📜", href: "/ancient", desc: "Эртний монгол үгс, тэдгээрийн утга ба хэрэглээ", lessons: 12 },
   { label: "Зөв бичих дүрэм", icon: "✍️", href: "/grammar", desc: "Зөв бичгийн дүрэм, түгээмэл алдаанууд", lessons: 24 },
   { label: "Журамласан үг", icon: "🗣️", href: "/words", desc: "Журамласан үгсийг зөв хэрэглэх нь", lessons: 18 },
   { label: "Хэлц үг", icon: "💬", href: "/idioms", desc: "Өдөр тутмын яриан дахь хэлц, зүйр цэцэн үг", lessons: 15, badge: "Шинэ" },
   { label: "Монгол бичиг", icon: "🖋️", href: "/script", desc: "Уламжлалт босоо бичгийг эхнээс нь сурах", lessons: 20 },
+  { label: "Эртний үг", icon: "📜", href: "/ancient", desc: "Эртний монгол үгс, тэдгээрийн утга ба хэрэглээ", lessons: 12 },
 ];

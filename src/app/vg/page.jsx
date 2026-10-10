@@ -57,7 +57,7 @@ export default function QuizSetsPage() {
           textDecoration: 'none',
         }}
       >
-        ← Хичээлүүд рүү буцах
+        ← Дасгалууд руу буцах
       </Link>
       {/* Header Banner */}
       <div className="top">

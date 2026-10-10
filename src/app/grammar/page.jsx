@@ -8,6 +8,7 @@ import AppShell from '../myclass/components/AppShell'
 const TABLE = 'mongolian_grammar'
 const TYPE_COL = 'grammar_type'
 const DESC_COL = 'description'
+const TOPIC = 'grammar'
 
 const ROUND_SIZE = 10
 
@@ -24,8 +25,12 @@ const css = `
 .rules{display:grid;gap:14px}
 .rule-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
 .rule-title{font-size:18px;font-weight:800;line-height:1.35;margin:0}
-.rule-sec{flex-shrink:0;padding:3px 12px;border-radius:999px;background:rgba(2,132,199,.18);color:#0284c7;font-weight:800;font-size:13px}
+.rule-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.rule-sec{padding:3px 12px;border-radius:999px;background:rgba(2,132,199,.18);color:#0284c7;font-weight:800;font-size:13px}
 .rule-desc{margin:0;line-height:1.65;opacity:.85}
+.save-btn{width:36px;height:36px;border-radius:50%;border:2px solid rgba(128,128,128,.3);background:transparent;font-size:16px;cursor:pointer;display:grid;place-items:center;filter:grayscale(1);opacity:.7}
+.save-btn:hover{background:rgba(128,128,128,.12);opacity:1}
+.save-btn.on{filter:none;opacity:1;border-color:#0284c7;background:rgba(2,132,199,.15)}
 .qz-bar{height:8px;border-radius:999px;background:rgba(128,128,128,.25);overflow:hidden;margin:12px 0 20px}
 .qz-bar>div{height:100%;background:#0284c7;transition:width .3s}
 .qz-meta{display:flex;justify-content:space-between;font-weight:800;font-size:14px}
@@ -38,6 +43,8 @@ const css = `
 .qz-opt.ok{background:rgba(34,197,94,.18);border-color:#22c55e}
 .qz-opt.no{background:rgba(239,68,68,.18);border-color:#ef4444}
 .qz-opt.dim{opacity:.5}
+.qz-fb{margin-top:16px;padding:14px 16px;border-radius:16px;background:rgba(239,68,68,.12);border:2px solid rgba(239,68,68,.35);line-height:1.6;font-weight:600;font-size:14px}
+.qz-fb b{font-weight:800}
 .qz-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px}
 .qz-ok{color:#22c55e;font-weight:800}
 .qz-no{color:#ef4444;font-weight:800}
@@ -84,8 +91,10 @@ function buildRound(rows) {
         ),
       ].slice(0, 3)
       return {
+        id: r.id,
         prompt: r[DESC_COL],
         answer,
+        section: sectionOf(r[TYPE_COL]),
         options: shuffle([answer, ...wrong]),
       }
     })
@@ -103,6 +112,9 @@ export default function GrammarPage() {
   const [idx, setIdx] = useState(0)
   const [selected, setSelected] = useState(null)
   const [score, setScore] = useState(0)
+
+  const [userId, setUserId] = useState(null)
+  const [savedIds, setSavedIds] = useState(new Set())
 
   useEffect(() => {
     const load = async () => {
@@ -125,6 +137,23 @@ export default function GrammarPage() {
     load()
   }, [])
 
+  // Load the user and which rules they already saved
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data } = await supabase.auth.getUser()
+      const user = data?.user
+      if (!user) return
+      setUserId(user.id)
+
+      const { data: saved } = await supabase
+        .from('saved_items')
+        .select('item_id')
+        .eq('topic', TOPIC)
+      setSavedIds(new Set((saved || []).map((s) => s.item_id)))
+    }
+    loadUser()
+  }, [])
+
   const q = questions[idx]
   const finished = mode === 'quiz' && questions.length > 0 && idx >= questions.length
   const ready = !loading && !error
@@ -137,15 +166,69 @@ export default function GrammarPage() {
     setMode('quiz')
   }
 
+  const saveMistake = async (option) => {
+    if (!userId) return
+    const { error } = await supabase.from('mistakes').upsert(
+      {
+        user_id: userId,
+        topic: TOPIC,
+        question_id: String(q.id),
+        question: q.prompt,
+        user_answer: option,
+        correct_answer: q.answer,
+        explanation: `Энэ тайлбар «${q.answer}» ${q.section} дүрэмд хамаарна. Та «${option}»-г сонгосон нь өөр дүрэм юм.`,
+      },
+      { onConflict: 'user_id,topic,question_id' }
+    )
+    if (error) console.error('saveMistake:', error.message)
+  }
+
   const choose = (option) => {
     if (selected !== null) return
     setSelected(option)
-    if (option === q.answer) setScore((s) => s + 1)
+    if (option === q.answer) {
+      setScore((s) => s + 1)
+    } else {
+      saveMistake(option)
+    }
   }
 
   const next = () => {
     setSelected(null)
     setIdx((i) => i + 1)
+  }
+
+  const toggleSave = async (r) => {
+    if (!userId) {
+      alert('Хадгалахын тулд нэвтэрнэ үү')
+      return
+    }
+    const itemId = `${TOPIC}-${r.id}`
+    const isSaved = savedIds.has(itemId)
+
+    // update the UI right away
+    const nextSet = new Set(savedIds)
+    isSaved ? nextSet.delete(itemId) : nextSet.add(itemId)
+    setSavedIds(nextSet)
+
+    const { error } = isSaved
+      ? await supabase
+          .from('saved_items')
+          .delete()
+          .eq('user_id', userId)
+          .eq('item_id', itemId)
+      : await supabase.from('saved_items').insert({
+          user_id: userId,
+          topic: TOPIC,
+          item_id: itemId,
+          title: `${cleanTitle(r[TYPE_COL])} ${sectionOf(r[TYPE_COL])}`.trim(),
+          content: r[DESC_COL],
+        })
+
+    if (error) {
+      console.error('toggleSave:', error.message)
+      setSavedIds(savedIds) // undo on failure
+    }
   }
 
   const filtered = rows.filter((r) => {
@@ -158,7 +241,7 @@ export default function GrammarPage() {
   })
 
   return (
-    <AppShell userName="y/n">
+    <AppShell userName="">
       <style>{css}</style>
 
       <Link href="/myclass/lessons" className="back-btn">
@@ -223,17 +306,32 @@ export default function GrammarPage() {
           </p>
 
           <div className="rules">
-            {filtered.map((r) => (
-              <div key={r.id} className="panel">
-                <div className="rule-head">
-                  <p className="rule-title">{cleanTitle(r[TYPE_COL])}</p>
-                  {sectionOf(r[TYPE_COL]) && (
-                    <span className="rule-sec">{sectionOf(r[TYPE_COL])}</span>
-                  )}
+            {filtered.map((r) => {
+              const isSaved = savedIds.has(`${TOPIC}-${r.id}`)
+              return (
+                <div key={r.id} className="panel">
+                  <div className="rule-head">
+                    <p className="rule-title">{cleanTitle(r[TYPE_COL])}</p>
+                    <div className="rule-right">
+                      {sectionOf(r[TYPE_COL]) && (
+                        <span className="rule-sec">{sectionOf(r[TYPE_COL])}</span>
+                      )}
+                      <button
+                        type="button"
+                        className={`save-btn ${isSaved ? 'on' : ''}`}
+                        onClick={() => toggleSave(r)}
+                        aria-label={isSaved ? 'Хадгалснаас хасах' : 'Хадгалах'}
+                        aria-pressed={isSaved}
+                        title={isSaved ? 'Хадгалснаас хасах' : 'Хадгалах'}
+                      >
+                        🔖
+                      </button>
+                    </div>
+                  </div>
+                  <p className="rule-desc">{r[DESC_COL]}</p>
                 </div>
-                <p className="rule-desc">{r[DESC_COL]}</p>
-              </div>
-            ))}
+              )
+            })}
             {filtered.length === 0 && (
               <div className="panel" style={{ textAlign: 'center' }}>
                 Дүрэм олдсонгүй. Өөр түлхүүр үгээр хайгаарай.
@@ -282,6 +380,14 @@ export default function GrammarPage() {
             })}
           </div>
 
+          {selected !== null && selected !== q.answer && (
+            <div className="qz-fb">
+              <b>Санал:</b> Зөв хариулт нь <b>«{q.answer}»</b> {q.section}. Та
+              «{selected}»-г сонгосон нь өөр дүрэм. Энэ алдаа <b>Алдсан</b> хэсэгт
+              хадгалагдлаа.
+            </div>
+          )}
+
           {selected !== null && (
             <div className="qz-foot">
               <span className={selected === q.answer ? 'qz-ok' : 'qz-no'}>
@@ -313,6 +419,11 @@ export default function GrammarPage() {
             <button onClick={startQuiz} className="btn">
               Дахин тоглох
             </button>
+            {score < questions.length && (
+              <Link href="/myclass/stats" className="back-btn" style={{ marginBottom: 0 }}>
+                Алдсанаа харах
+              </Link>
+            )}
             <button
               onClick={() => setMode('study')}
               className="back-btn"

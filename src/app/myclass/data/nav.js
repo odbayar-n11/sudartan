@@ -4,7 +4,7 @@ export const mainNav = [
   { label: "Нүүр", icon: "🏠", href: "/myclass/dashboard" },
   { label: "Дасгалууд", icon: "🎓", href: "/myclass/lessons", also: topicPaths }, // stays highlighted inside topic pages
   { label: "Төлөвлөгөө", icon: "📅", href: "/myclass/plan" },
-  { label: "Статистик", icon: "📊", href: "/myclass/stats" },
+  { label: "Алдсан", icon: "📊", href: "/myclass/stats" },
   { label: "Хадгалсан", icon: "🔖", href: "/myclass/saved" },
 ];
 
@@ -15,5 +15,5 @@ export const topics = [
   { label: "Хэлц үг", icon: "💬", href: "/idioms", desc: "Өдөр тутмын яриан дахь хэлц, зүйр цэцэн үг", lessons: 15, badge: "Шинэ" },
   { label: "Монгол бичиг", icon: "🖋️", href: "/script", desc: "Уламжлалт босоо бичгийг эхнээс нь сурах", lessons: 20 },
   { label: "Эртний үг", icon: "📜", href: "/ancient", desc: "Эртний монгол үгс, тэдгээрийн утга ба хэрэглээ", lessons: 4 },
-  { label: "Уран зохиол", icon: "📖", href: "/uran-zohiol", desc: "Уран зохиолын нэр томьёо, зохиол бүтээлүүд", lessons: 10 },
+  { label: "Уран дүрслэл", icon: "📖", href: "/uran-durslel", desc: "Адилтгал, зүйрлэл, хүншүүлэл...", lessons: 10 },
 ];

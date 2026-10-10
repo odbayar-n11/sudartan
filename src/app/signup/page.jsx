@@ -18,6 +18,7 @@ const body = Nunito({
 })
 
 export default function SignUp() {
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,22 +26,39 @@ export default function SignUp() {
 
   const handleSignUp = async (e) => {
     e.preventDefault()
-    setLoading(true)
     setMessage('')
+
+    const name = username.trim()
+    if (name.length < 3 || name.length > 20) {
+      setMessage('Хэрэглэгчийн нэр 3-20 тэмдэгттэй байх ёстой')
+      return
+    }
+
+    setLoading(true)
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: { username: name }, // the trigger copies this into the profiles table
+      },
     })
 
     if (error) {
-      setMessage(error.message)
+      if (error.message.toLowerCase().includes('database error')) {
+        setMessage('Энэ хэрэглэгчийн нэр бүртгэлтэй байна')
+      } else {
+        setMessage(error.message)
+      }
     } else {
-      setMessage('Амжилттай! Баталгаажуулах холбоосыг и-мэйлээсээ шалгана уу.')
+      setMessage('Амжилттай!')
     }
 
     setLoading(false)
   }
+
+  const inputClass =
+    'w-full px-4 py-3 rounded-2xl border border-[#bae6fd] bg-[#f0f9ff] text-[#0f172a] placeholder:text-[#94a3b8] outline-none focus:border-[#0284c7] focus:ring-2 focus:ring-[#bae6fd] transition-all duration-200'
 
   return (
     <div
@@ -55,8 +73,10 @@ export default function SignUp() {
             alt="Sudartan"
             className="w-10 h-10 object-contain"
           />
-          <span className="font-extrabold text-2xl text-[#0284c7] tracking-wide"
-            style={{ fontFamily: 'var(--font-display)' }}>
+          <span
+            className="font-extrabold text-2xl text-[#0284c7] tracking-wide"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
             СУДАРТАН
           </span>
         </div>
@@ -86,6 +106,22 @@ export default function SignUp() {
 
           <div>
             <label className="block text-sm font-bold text-[#0c4a6e] mb-1.5">
+              Хэрэглэгчийн нэр
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              minLength={3}
+              maxLength={20}
+              className={inputClass}
+              placeholder="Нэрээ оруулна уу"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-[#0c4a6e] mb-1.5">
               И-мэйл
             </label>
             <input
@@ -93,7 +129,7 @@ export default function SignUp() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-2xl border border-[#bae6fd] bg-[#f0f9ff] text-[#0f172a] placeholder:text-[#94a3b8] outline-none focus:border-[#0284c7] focus:ring-2 focus:ring-[#bae6fd] transition-all duration-200"
+              className={inputClass}
               placeholder="tanii@imeil.mn"
             />
           </div>
@@ -107,7 +143,8 @@ export default function SignUp() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-2xl border border-[#bae6fd] bg-[#f0f9ff] text-[#0f172a] placeholder:text-[#94a3b8] outline-none focus:border-[#0284c7] focus:ring-2 focus:ring-[#bae6fd] transition-all duration-200"
+              minLength={6}
+              className={inputClass}
               placeholder="••••••••"
             />
           </div>

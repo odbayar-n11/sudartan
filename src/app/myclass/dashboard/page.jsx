@@ -1,7 +1,7 @@
 "use client";
-
-import { useMemo, useState } from "react";
 import AppShell from "../components/AppShell";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "../../../lib/supabase";
 
 /* ---------- Data (replace with your API) ---------- */
 const customers = [
@@ -88,8 +88,24 @@ function CustomersTable() {
 
 /* ---------- Page ---------- */
 export default function DashboardPage() {
-  // TODO: replace with the logged-in user's name from your auth
-  const userName = "y/n";
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    async function loadProfile() {
+      const { data: auth } = await supabase.auth.getUser();
+      const user = auth?.user;
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .single();
+
+      setUserName(profile?.username || user.email.split("@")[0]);
+    }
+    loadProfile();
+  }, []);
 
   return (
     <AppShell userName={userName}>

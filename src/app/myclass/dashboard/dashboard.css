@@ -19,13 +19,16 @@
 .app .upg b{background:#ffd23f;color:#3a2e00;border-radius:8px;padding:2px 8px;font-size:12px}
 .app .me{display:flex;align-items:center;gap:10px;padding:10px 14px;color:var(--sideact);font-weight:700}
 .app .me i{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7ed6a8,#4aa8f0);display:block}
+.app .logo{cursor:default;user-select:none} /* NEW */
+.app .logout-btn{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;border:0;border-radius:14px;background:transparent;color:var(--sidetxt);font-weight:700;font-size:15px;text-align:left} /* NEW */
+.app .logout-btn:hover{background:var(--badbg);color:var(--bad)} /* NEW */
 .app main{flex:1;min-width:0;background:var(--page);margin:10px 10px 10px 0;border-radius:26px;overflow:hidden}
 .app .promo{background:var(--soft);color:var(--blue-d);text-align:center;padding:14px;font-weight:700;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap}
 .app .promo button{background:var(--blue);border:0;border-radius:999px;padding:7px 16px;font-weight:800;color:#fff}
 .app .wrap{max-width:1040px;margin:0 auto;padding:36px 40px 56px}
 .app .top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
 .app h1{font-size:34px;line-height:1.15;margin:0 0 6px;font-weight:800}
-.app h1 small{display:block;color:var(--mute);font-weight:700;font-size:20px}
+.app h1 small{display:inline;color:var(--blue);font-weight:800;font-size:inherit;margin-left:6px}
 .app .lead{color:var(--mute);font-weight:600;margin:18px 0 14px}
 .app .btn{background:var(--blue);color:#fff;border:0;border-radius:999px;padding:13px 26px;font-weight:800;font-size:16px;box-shadow:0 6px 16px rgba(10,132,208,.3)}
 .app .btn:hover{background:var(--blue-d)}
@@ -75,3 +78,33 @@
 .app .stat{border-right:0;border-bottom:2px solid var(--page)}
 .app .logo img{width:40px;height:40px;object-fit:contain;flex:none}
 }
+
+/* ---------- Logout confirm modal ---------- */
+.app .modal-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:rgba(11,47,74,.55);backdrop-filter:blur(3px)}
+.app .modal{width:100%;max-width:400px;background:var(--card);color:var(--ink);border-radius:28px;padding:28px 26px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
+.app .modal-ic{width:60px;height:60px;margin:0 auto 12px;border-radius:50%;background:var(--badbg);display:grid;place-items:center;font-size:28px}
+.app .modal h2{margin:0 0 6px;font-size:22px;font-weight:800}
+.app .modal p{margin:0 0 18px;color:var(--mute);font-weight:600;font-size:14px}
+.app .modal input{width:100%;font:inherit;font-weight:600;background:var(--soft);color:var(--ink);border:2px solid transparent;border-radius:999px;padding:12px 18px}
+.app .modal input:focus{border-color:var(--blue);outline:none}
+.app .modal-err{margin-top:10px;color:var(--bad);font-weight:700;font-size:14px}
+.app .modal-actions{display:flex;gap:10px;margin-top:20px}
+.app .modal-actions button{flex:1;border:0;border-radius:999px;padding:12px 16px;font-weight:800;font-size:15px}
+.app .modal-cancel{background:var(--soft);color:var(--ink)}
+.app .modal-ok{background:var(--bad);color:#fff}
+.app .modal-ok:hover:not(:disabled){filter:brightness(.92)}
+.app .modal-actions button:disabled{opacity:.6;cursor:not-allowed}
+
+/* ---------- User menu (bottom of sidebar) ---------- */
+.app .me-wrap{position:relative}
+.app .me-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border:0;border-radius:14px;background:transparent;color:var(--sideact);font-weight:700;font-size:15px;text-align:left}
+.app .me-btn:hover,.app .me-btn[aria-expanded="true"]{background:rgba(255,255,255,.25)}
+.app .me-btn i{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7ed6a8,#4aa8f0);display:block;flex:none}
+.app .me-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app .me-btn .chev{margin-left:auto;opacity:.7;font-size:14px}
+.app .user-menu{position:absolute;left:0;right:0;bottom:calc(100% + 8px);z-index:50;padding:8px;border-radius:18px;background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.app .um-email{padding:8px 12px;font-size:13px;font-weight:600;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app .um-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:12px;background:transparent;color:var(--ink);font-weight:700;font-size:15px;text-align:left;text-decoration:none}
+.app .um-item:hover{background:var(--soft)}
+.app .um-item.danger:hover{background:var(--badbg);color:var(--bad)}
+.app .um-sep{height:1px;background:var(--line);margin:6px 4px}

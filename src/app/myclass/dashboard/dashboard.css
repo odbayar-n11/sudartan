@@ -108,3 +108,287 @@
 .app .um-item:hover{background:var(--soft)}
 .app .um-item.danger:hover{background:var(--badbg);color:var(--bad)}
 .app .um-sep{height:1px;background:var(--line);margin:6px 4px}
+
+/* Neutral colors, so these cards follow the app's light and dark themes */
+
+.hm-hero {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.hm-card {
+  padding: 24px 26px;
+}
+
+.hm-card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.hm-muted {
+  margin: 6px 0 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  opacity: 0.72;
+}
+
+.hm-gap {
+  margin-top: 16px;
+}
+
+/* plan progress */
+.hm-bar {
+  height: 8px;
+  margin-top: 18px;
+  border-radius: 999px;
+  background: rgba(128, 128, 128, 0.28);
+  overflow: hidden;
+}
+
+.hm-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #2f8fe4;
+  transition: width 0.4s ease;
+}
+
+.hm-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.hm-next {
+  margin: 16px 0 18px;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+/* score ring */
+.hm-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.hm-ring {
+  position: relative;
+  width: 124px;
+  height: 124px;
+}
+
+.hm-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.hm-ring circle {
+  fill: none;
+  stroke-width: 9;
+}
+
+.hm-ring-bg {
+  stroke: rgba(128, 128, 128, 0.28);
+}
+
+.hm-ring-fg {
+  stroke: #2f8fe4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+.hm-ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hm-ring-text strong {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hm-ring-text span {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+/* links */
+.hm-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: #2f8fe4;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.hm-link:hover {
+  text-decoration: underline;
+}
+
+/* section tiles */
+.hm-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.hm-tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid rgba(128, 128, 128, 0.28);
+  border-radius: 18px;
+  background: rgba(128, 128, 128, 0.08);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.hm-tile:hover {
+  border-color: #2f8fe4;
+  background: rgba(47, 143, 228, 0.12);
+}
+
+.hm-tile:focus-visible {
+  outline: 3px solid rgba(47, 143, 228, 0.55);
+  outline-offset: 2px;
+}
+
+.hm-tile-ic {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(47, 143, 228, 0.18);
+  font-size: 22px;
+}
+
+.hm-tile strong {
+  display: block;
+  font-size: 15.5px;
+  font-weight: 800;
+}
+
+.hm-tile small {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+/* two-column rows */
+.hm-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.hm-word {
+  margin: 12px 0 0;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.hm-num {
+  margin: 10px 0 0;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hm-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.hm-list li {
+  padding: 10px 0;
+  border-top: 1px solid rgba(128, 128, 128, 0.25);
+  font-size: 14.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hm-list li:first-child {
+  border-top: 0;
+}
+
+/* loading placeholder */
+.hm-skel {
+  height: 14px;
+  margin-top: 14px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    rgba(128, 128, 128, 0.16),
+    rgba(128, 128, 128, 0.3),
+    rgba(128, 128, 128, 0.16)
+  );
+  background-size: 200% 100%;
+  animation: hm-shimmer 1.4s linear infinite;
+}
+
+@keyframes hm-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* small screens */
+@media (max-width: 900px) {
+  .hm-hero,
+  .hm-two {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-tiles {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .hm-tiles {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-skel {
+    animation: none;
+  }
+
+  .hm-bar span,
+  .hm-ring-fg,
+  .hm-tile {
+    transition: none;
+  }
+}

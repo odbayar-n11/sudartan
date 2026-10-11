@@ -1,0 +1,339 @@
+.pf {
+  --pf-ink: #14263a;
+  --pf-muted: #5f7388;
+  --pf-line: #d9e7f2;
+  --pf-wash: #f4f9fd;
+  --pf-sky: #90d2f7;
+  --pf-blue: #2f8fe4;
+  --pf-blue-dark: #1f74c4;
+  --pf-red: #b42323;
+  --pf-green: #14683a;
+
+  width: 100%;
+  max-width: 760px;
+}
+
+/* ---------- page heading ---------- */
+.pf-top {
+  margin-bottom: 22px;
+}
+
+.pf-top h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.pf-top p {
+  margin: 6px 0 0;
+  color: var(--pf-muted);
+  font-size: 15px;
+}
+
+.pf-note {
+  color: var(--pf-muted);
+}
+
+/* ---------- card ---------- */
+.pf-card {
+  border: 1px solid var(--pf-line);
+  border-radius: 22px;
+  background: #fff;
+  color: var(--pf-ink);
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(31, 116, 196, 0.08);
+}
+
+.pf-skeleton {
+  height: 420px;
+  background: linear-gradient(90deg, var(--pf-wash), #fff, var(--pf-wash));
+  background-size: 200% 100%;
+  animation: pf-shimmer 1.4s linear infinite;
+}
+
+@keyframes pf-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- banner + avatar ---------- */
+.pf-banner {
+  height: 124px;
+  background: linear-gradient(115deg, var(--pf-sky) 0%, #bfe4fa 55%, #e4f3fd 100%);
+}
+
+.pf-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 0 32px;
+  margin-top: -52px;
+}
+
+.pf-avatar {
+  position: relative;
+  flex-shrink: 0;
+  width: 116px;
+  height: 116px;
+  padding: 0;
+  border: 5px solid #fff;
+  border-radius: 50%;
+  background: #dff0fc;
+  color: var(--pf-blue-dark);
+  font: inherit;
+  font-size: 44px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(20, 38, 58, 0.14);
+}
+
+.pf-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.pf-avatar > span:first-child {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.pf-cam {
+  position: absolute;
+  right: -2px;
+  bottom: 2px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--pf-blue);
+  color: #fff;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.pf-avatar:hover .pf-cam {
+  background: var(--pf-blue-dark);
+  transform: scale(1.08);
+}
+
+.pf-avatar:focus-visible {
+  outline: 3px solid var(--pf-blue);
+  outline-offset: 3px;
+}
+
+.pf-who {
+  min-width: 0;
+  /* avatar overlaps the banner by 52px, so start the text just below it */
+  padding-top: 62px;
+}
+
+.pf-who h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-who p {
+  margin: 3px 0 0;
+  color: var(--pf-muted);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-who .pf-tag {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.pf-who .pf-tag.warn {
+  color: var(--pf-red);
+}
+
+/* ---------- fields ---------- */
+.pf-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 28px 32px 32px;
+}
+
+.pf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pf-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pf-label small {
+  color: var(--pf-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pf-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1.5px solid var(--pf-line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--pf-muted);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pf-input:focus-within {
+  border-color: var(--pf-blue);
+  box-shadow: 0 0 0 4px rgba(47, 143, 228, 0.16);
+  color: var(--pf-blue);
+}
+
+.pf-input svg {
+  flex-shrink: 0;
+}
+
+.pf-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--pf-ink);
+  font: inherit;
+  font-weight: 600;
+}
+
+.pf-pending {
+  color: var(--pf-blue-dark);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- footer ---------- */
+.pf-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 32px;
+  border-top: 1px solid var(--pf-line);
+  background: var(--pf-wash);
+}
+
+.pf-msg {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pf-msg.ok {
+  color: var(--pf-green);
+}
+
+.pf-msg.error {
+  color: var(--pf-red);
+}
+
+.pf-btn {
+  padding: 12px 24px;
+  border: 1.5px solid var(--pf-blue);
+  border-radius: 12px;
+  background: var(--pf-blue);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pf-btn:hover:not(:disabled) {
+  background: var(--pf-blue-dark);
+  border-color: var(--pf-blue-dark);
+}
+
+.pf-btn.ghost {
+  background: #fff;
+  border-color: var(--pf-line);
+  color: var(--pf-ink);
+}
+
+.pf-btn.ghost:hover:not(:disabled) {
+  background: var(--pf-wash);
+  border-color: var(--pf-sky);
+}
+
+.pf-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pf-btn:focus-visible {
+  outline: 3px solid rgba(47, 143, 228, 0.5);
+  outline-offset: 2px;
+}
+
+/* ---------- small screens ---------- */
+@media (max-width: 640px) {
+  .pf-head {
+    padding: 0 20px;
+    gap: 14px;
+  }
+
+  .pf-avatar {
+    width: 96px;
+    height: 96px;
+    font-size: 36px;
+  }
+
+  .pf-body {
+    grid-template-columns: 1fr;
+    padding: 24px 20px 28px;
+  }
+
+  .pf-foot {
+    flex-wrap: wrap;
+    padding: 16px 20px;
+  }
+
+  .pf-msg {
+    flex-basis: 100%;
+  }
+
+  .pf-btn {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-skeleton {
+    animation: none;
+  }
+
+  .pf-cam,
+  .pf-input,
+  .pf-btn {
+    transition: none;
+  }
+}

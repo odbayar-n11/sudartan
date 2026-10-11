@@ -38,6 +38,7 @@ export default function AppShell({ userName = "", children }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [avatar, setAvatar] = useState("");
   const menuRef = useRef(null);
 
   // logout confirm dialog
@@ -46,19 +47,28 @@ export default function AppShell({ userName = "", children }) {
   const [loading, setLoading] = useState(false);
   const confirmBtnRef = useRef(null);
 
-  // Load the logged-in user's email and username
+  // Load the logged-in user's email, username and avatar.
+  // Reloads when the profile page fires the "profile-updated" event.
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
+    async function loadUser() {
+      const { data } = await supabase.auth.getUser();
       const u = data?.user;
       setEmail(u?.email || "");
       if (!u) return;
+
       const { data: p } = await supabase
         .from("profiles")
-        .select("username")
+        .select("username, avatar_url")
         .eq("id", u.id)
         .single();
+
       setName(p?.username || u.email.split("@")[0]);
-    });
+      setAvatar(p?.avatar_url || "");
+    }
+
+    loadUser();
+    window.addEventListener("profile-updated", loadUser);
+    return () => window.removeEventListener("profile-updated", loadUser);
   }, []);
 
   // Close the user menu on outside click or Escape
@@ -177,7 +187,21 @@ export default function AppShell({ userName = "", children }) {
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
           >
-            <i aria-hidden />
+            <i aria-hidden style={{ overflow: "hidden" }}>
+              {avatar && (
+                <img
+                  src={avatar}
+                  alt=""
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+              )}
+            </i>
             <span className="me-name">{name || userName}</span>
             <span className="chev" aria-hidden>⌃</span>
           </button>

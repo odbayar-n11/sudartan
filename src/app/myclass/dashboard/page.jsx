@@ -3,26 +3,20 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Hand, Trophy, Sparkles, Repeat, PartyPopper } from "lucide-react";
 import AppShell from "../components/AppShell";
 import { supabase } from "../../../lib/supabase";
 import "./dashboard.css";
 
 /* ---------- Links (change here if your routes differ) ---------- */
 const PLAN_HREF = "/myclass/plan";
-const MISTAKES_HREF = "/myclass/stats";
+const MISTAKES_HREF = "/myclass/mistakes";
 const SAVED_HREF = "/myclass/saved";
-
-const SECTIONS = [
-  { href: "/ancient", icon: "📜", title: "Эртний үг", text: "Эртний монгол үгсийн сан" },
-  { href: "/grammar", icon: "📖", title: "Дүрэм", text: "Хэлзүйн дүрэм, дасгал" },
-  { href: "/idioms", icon: "💬", title: "Хэлц үг", text: "Хэлц, зүйр цэцэн үг" },
-  { href: "/script", icon: "✍️", title: "Монгол бичиг", text: "Монгол бичгийн үгс" },
-  { href: "/uran-durslel", icon: "🎨", title: "Уран дүрслэл", text: "Хэрэгсэл ба жишээ" },
-  { href: "/quiz", icon: "🏆", title: "Шалгалт", text: "Мэдлэгээ сориорой" },
-];
 
 const RING_R = 44;
 const RING_C = 2 * Math.PI * RING_R;
+
+const inline = { display: "inline-flex", alignItems: "center", gap: 8 };
 
 /* ---------- Data helpers ---------- */
 async function fetchPlan(token) {
@@ -245,12 +239,17 @@ export default function DashboardPage() {
       <div className="top">
         <div>
           <h1>
-            Өдрийн мэнд,<small>{userName} 👋</small>
+            Өдрийн мэнд,
+            <small style={inline}>
+              {userName} <Hand size={20} aria-hidden />
+            </small>
           </h1>
           <p className="lead">Өнөөдөр юу сурахаа сонгоцгооё</p>
         </div>
         <div className="chips">
-          <div className="chip">🏆 {score}</div>
+          <div className="chip" style={inline}>
+            <Trophy size={16} aria-hidden /> {score}
+          </div>
         </div>
       </div>
 
@@ -261,10 +260,14 @@ export default function DashboardPage() {
             <Skeleton lines={4} />
           ) : plan && summary ? (
             <>
-              <h3>
-                {summary.allDone
-                  ? "Төлөвлөгөөгөө дуусгалаа 🎉"
-                  : `${summary.week + 1}-р долоо хоног: ${plan.weeks[summary.week].title}`}
+              <h3 style={inline}>
+                {summary.allDone ? (
+                  <>
+                    Төлөвлөгөөгөө дуусгалаа <PartyPopper size={20} aria-hidden />
+                  </>
+                ) : (
+                  `${summary.week + 1}-р долоо хоног: ${plan.weeks[summary.week].title}`
+                )}
               </h3>
               <p className="hm-muted">
                 {summary.allDone
@@ -340,11 +343,12 @@ export default function DashboardPage() {
         </section>
       </div>
 
-
-
       {/* Word and idiom of the day */}
       <h2 className="sec">
-        <span className="ib" aria-hidden>✨</span>Өдрийн санал
+        <span className="ib" aria-hidden>
+          <Sparkles size={18} />
+        </span>
+        Өдрийн санал
       </h2>
       <div className="hm-two">
         <DailyCard
@@ -365,7 +369,10 @@ export default function DashboardPage() {
 
       {/* Review */}
       <h2 className="sec">
-        <span className="ib" aria-hidden>🔁</span>Давтлага
+        <span className="ib" aria-hidden>
+          <Repeat size={18} />
+        </span>
+        Давтлага
       </h2>
       <div className="hm-two">
         <section className="panel hm-card">

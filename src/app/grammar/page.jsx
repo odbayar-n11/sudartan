@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { saveMistake } from '@/lib/saveMistake'
 import AppShell from '../myclass/components/AppShell'
+import DuoQuiz from '../myclass/components/DuoQuiz'
 
 const TABLE = 'mongolian_grammar'
 const TYPE_COL = 'grammar_type'
@@ -31,25 +33,6 @@ const css = `
 .save-btn{width:36px;height:36px;border-radius:50%;border:2px solid rgba(128,128,128,.3);background:transparent;font-size:16px;cursor:pointer;display:grid;place-items:center;filter:grayscale(1);opacity:.7}
 .save-btn:hover{background:rgba(128,128,128,.12);opacity:1}
 .save-btn.on{filter:none;opacity:1;border-color:#0284c7;background:rgba(2,132,199,.15)}
-.qz-bar{height:8px;border-radius:999px;background:rgba(128,128,128,.25);overflow:hidden;margin:12px 0 20px}
-.qz-bar>div{height:100%;background:#0284c7;transition:width .3s}
-.qz-meta{display:flex;justify-content:space-between;font-weight:800;font-size:14px}
-.qz-label{opacity:.7;font-size:14px;margin:0 0 4px}
-.qz-prompt{font-size:18px;font-weight:800;line-height:1.5;margin:0 0 20px}
-.qz-opts{display:grid;gap:10px}
-.qz-opt{width:100%;text-align:left;padding:14px 18px;border-radius:16px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-size:15px;line-height:1.4;font-weight:800;cursor:pointer;transition:all .2s}
-.qz-opt:hover:not(:disabled){background:rgba(128,128,128,.12)}
-.qz-opt:disabled{cursor:default}
-.qz-opt.ok{background:rgba(34,197,94,.18);border-color:#22c55e}
-.qz-opt.no{background:rgba(239,68,68,.18);border-color:#ef4444}
-.qz-opt.dim{opacity:.5}
-.qz-fb{margin-top:16px;padding:14px 16px;border-radius:16px;background:rgba(239,68,68,.12);border:2px solid rgba(239,68,68,.35);line-height:1.6;font-weight:600;font-size:14px}
-.qz-fb b{font-weight:800}
-.qz-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px}
-.qz-ok{color:#22c55e;font-weight:800}
-.qz-no{color:#ef4444;font-weight:800}
-.qz-score{font-size:56px;font-weight:900;margin:8px 0}
-.qz-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 `
 
 function shuffle(arr) {
@@ -95,6 +78,7 @@ function buildRound(rows) {
         prompt: r[DESC_COL],
         answer,
         section: sectionOf(r[TYPE_COL]),
+        explanation: sectionOf(r[TYPE_COL]) ? `${sectionOf(r[TYPE_COL])} дүрэмд хамаарна.` : '',
         options: shuffle([answer, ...wrong]),
       }
     })
@@ -109,9 +93,7 @@ export default function GrammarPage() {
   const [query, setQuery] = useState('')
 
   const [questions, setQuestions] = useState([])
-  const [idx, setIdx] = useState(0)
-  const [selected, setSelected] = useState(null)
-  const [score, setScore] = useState(0)
+  const [round, setRound] = useState(0) // changing this key resets <DuoQuiz>
 
   const [userId, setUserId] = useState(null)
   const [savedIds, setSavedIds] = useState(new Set())
@@ -131,6 +113,12 @@ export default function GrammarPage() {
           (a, b) => sortKey(a[TYPE_COL]) - sortKey(b[TYPE_COL]) || a.id - b.id
         )
         setRows(sorted)
+        // Lessons card links here with ?mode=quiz -> start the Duolingo quiz right away
+        if (new URLSearchParams(window.location.search).get('mode') === 'quiz') {
+          setQuestions(buildRound(sorted))
+          setRound((r) => r + 1)
+          setMode('quiz')
+        }
       }
       setLoading(false)
     }
@@ -148,54 +136,31 @@ export default function GrammarPage() {
       const { data: saved } = await supabase
         .from('saved_items')
         .select('item_id')
+        .eq('user_id', user.id)
         .eq('topic', TOPIC)
       setSavedIds(new Set((saved || []).map((s) => s.item_id)))
     }
     loadUser()
   }, [])
 
-  const q = questions[idx]
-  const finished = mode === 'quiz' && questions.length > 0 && idx >= questions.length
   const ready = !loading && !error
 
   const startQuiz = () => {
     setQuestions(buildRound(rows))
-    setIdx(0)
-    setSelected(null)
-    setScore(0)
+    setRound((r) => r + 1)
     setMode('quiz')
   }
 
-  const saveMistake = async (option) => {
-    if (!userId) return
-    const { error } = await supabase.from('mistakes').upsert(
-      {
-        user_id: userId,
-        topic: TOPIC,
-        question_id: String(q.id),
-        question: q.prompt,
-        user_answer: option,
-        correct_answer: q.answer,
-        explanation: `Энэ тайлбар «${q.answer}» ${q.section} дүрэмд хамаарна. Та «${option}»-г сонгосон нь өөр дүрэм юм.`,
-      },
-      { onConflict: 'user_id,topic,question_id' }
-    )
-    if (error) console.error('saveMistake:', error.message)
-  }
-
-  const choose = (option) => {
-    if (selected !== null) return
-    setSelected(option)
-    if (option === q.answer) {
-      setScore((s) => s + 1)
-    } else {
-      saveMistake(option)
-    }
-  }
-
-  const next = () => {
-    setSelected(null)
-    setIdx((i) => i + 1)
+  const handleAnswer = (q, option, ok) => {
+    if (ok) return
+    saveMistake({
+      topic: TOPIC,
+      questionId: q.id,
+      question: q.prompt,
+      userAnswer: option,
+      correctAnswer: q.answer,
+      explanation: `Энэ тайлбар «${q.answer}» ${q.section} дүрэмд хамаарна. Та «${option}»-г сонгосон нь өөр дүрэм юм.`,
+    })
   }
 
   const toggleSave = async (r) => {
@@ -208,7 +173,8 @@ export default function GrammarPage() {
 
     // update the UI right away
     const nextSet = new Set(savedIds)
-    isSaved ? nextSet.delete(itemId) : nextSet.add(itemId)
+    if (isSaved) nextSet.delete(itemId)
+    else nextSet.add(itemId)
     setSavedIds(nextSet)
 
     const { error } = isSaved
@@ -341,98 +307,31 @@ export default function GrammarPage() {
         </>
       )}
 
-      {/* ---------- Quiz ---------- */}
-      {ready && mode === 'quiz' && q && !finished && (
-        <div className="panel">
-          <div className="qz-meta">
-            <span>
-              {idx + 1} / {questions.length}
-            </span>
-            <span>Оноо: {score}</span>
-          </div>
-          <div className="qz-bar">
-            <div style={{ width: `${(idx / questions.length) * 100}%` }} />
-          </div>
-
-          <p className="qz-label">Тайлбар:</p>
-          <p className="qz-prompt">{q.prompt}</p>
-
-          <div className="qz-opts">
-            {q.options.map((opt, i) => {
-              const isCorrect = opt === q.answer
-              const isPicked = selected === opt
-              let cls = 'qz-opt'
-              if (selected !== null) {
-                if (isCorrect) cls += ' ok'
-                else if (isPicked) cls += ' no'
-                else cls += ' dim'
-              }
-              return (
-                <button
-                  key={i}
-                  onClick={() => choose(opt)}
-                  disabled={selected !== null}
-                  className={cls}
-                >
-                  {opt}
-                </button>
-              )
-            })}
-          </div>
-
-          {selected !== null && selected !== q.answer && (
-            <div className="qz-fb">
-              <b>Санал:</b> Зөв хариулт нь <b>«{q.answer}»</b> {q.section}. Та
-              «{selected}»-г сонгосон нь өөр дүрэм. Энэ алдаа <b>Алдсан</b> хэсэгт
-              хадгалагдлаа.
-            </div>
-          )}
-
-          {selected !== null && (
-            <div className="qz-foot">
-              <span className={selected === q.answer ? 'qz-ok' : 'qz-no'}>
-                {selected === q.answer ? 'Зөв!' : 'Буруу.'}
-              </span>
-              <button onClick={next} className="btn">
-                {idx + 1 === questions.length ? 'Дуусгах' : 'Дараагийн →'}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ---------- Result ---------- */}
-      {finished && (
-        <div className="panel" style={{ textAlign: 'center', padding: '40px' }}>
-          <p style={{ color: 'var(--mute)', fontWeight: 700 }}>Таны дүн</p>
-          <p className="qz-score">
-            {score} / {questions.length}
-          </p>
-          <p style={{ color: 'var(--mute)', marginBottom: 20 }}>
-            {score === questions.length
-              ? 'Төгс! Бүгдийг зөв хариуллаа.'
-              : score >= questions.length / 2
-              ? 'Сайн байна! Дахин оролдоод үзээрэй.'
-              : 'Дүрмүүдийг дахин уншаад оролдоорой.'}
-          </p>
-          <div className="qz-actions">
-            <button onClick={startQuiz} className="btn">
-              Дахин тоглох
-            </button>
-            {score < questions.length && (
-              <Link href="/myclass/stats" className="back-btn" style={{ marginBottom: 0 }}>
+      {/* ---------- Quiz (Duolingo style) ---------- */}
+      {ready && mode === 'quiz' && questions.length > 0 && (
+        <DuoQuiz
+          key={round}
+          questions={questions}
+          label="Тайлбар:"
+          promptSize={18}
+          onAnswer={handleAnswer}
+          onRestart={startQuiz}
+          actions={
+            <>
+              <Link href="/myclass/mistakes" className="back-btn" style={{ marginBottom: 0 }}>
                 Алдсанаа харах
               </Link>
-            )}
-            <button
-              onClick={() => setMode('study')}
-              className="back-btn"
-              style={{ marginBottom: 0 }}
-            >
-              Дүрэм үзэх
-            </button>
-          </div>
-        </div>
+              <button
+                type="button"
+                onClick={() => setMode('study')}
+                className="back-btn"
+                style={{ marginBottom: 0 }}
+              >
+                Дүрэм үзэх
+              </button>
+            </>
+          }
+        />
       )}
     </AppShell>
   )

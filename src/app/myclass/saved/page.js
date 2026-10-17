@@ -78,7 +78,7 @@ export default function SavedPage() {
       )}
       {!loading && loggedIn && !error && items.length === 0 && (
         <div className="panel" style={{ textAlign: 'center', padding: 40 }}>
-          🔖 Хоосон байна. Дүрэм дээрх 🔖 товчийг дарж хадгална уу.
+           Хоосон байна. Дүрэм дээрх товчийг дарж хадгална уу.
         </div>
       )}
 

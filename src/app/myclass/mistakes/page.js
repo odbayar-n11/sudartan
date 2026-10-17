@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { PartyPopper, Lightbulb } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import AppShell from '../components/AppShell'
 
@@ -14,7 +15,9 @@ const css = `
 .m-row span{display:block;font-size:12px;opacity:.7;margin-bottom:2px}
 .m-bad{background:rgba(239,68,68,.15);border:2px solid rgba(239,68,68,.35)}
 .m-good{background:rgba(34,197,94,.15);border:2px solid rgba(34,197,94,.35)}
-.m-fb{margin:0;padding:12px 14px;border-radius:14px;background:rgba(2,132,199,.12);line-height:1.6;font-size:14px;font-weight:600}
+.m-fb{margin:0;padding:12px 14px;border-radius:14px;background:rgba(2,132,199,.12);line-height:1.6;font-size:14px;font-weight:600;display:flex;gap:10px;align-items:flex-start}
+.m-fb svg{flex-shrink:0;margin-top:3px;color:#0284c7}
+.m-empty{display:flex;align-items:center;justify-content:center;gap:10px}
 .m-del{border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;border-radius:999px;padding:5px 14px;font-weight:800;font-size:13px;cursor:pointer}
 .m-del:hover{background:rgba(239,68,68,.15);border-color:#ef4444;color:#ef4444}
 `
@@ -83,8 +86,9 @@ export default function MistakesPage() {
         </div>
       )}
       {!loading && loggedIn && !error && items.length === 0 && (
-        <div className="panel" style={{ textAlign: 'center', padding: 40 }}>
-          🎉 Одоогоор алдаа алга. Дасгал хийж үзээрэй!
+        <div className="panel m-empty" style={{ padding: 40 }}>
+          <PartyPopper size={22} aria-hidden />
+          Одоогоор алдаа алга. Дасгал хийж үзээрэй!
         </div>
       )}
 
@@ -110,7 +114,12 @@ export default function MistakesPage() {
                 {m.correct_answer}
               </div>
             </div>
-            {m.explanation && <p className="m-fb">💡 {m.explanation}</p>}
+            {m.explanation && (
+              <p className="m-fb">
+                <Lightbulb size={18} aria-hidden />
+                <span>{m.explanation}</span>
+              </p>
+            )}
           </div>
         ))}
       </div>

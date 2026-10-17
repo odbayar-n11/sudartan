@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BookOpen, FileText, Flame, Gem } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-// Updated import path for AppShell located in app/myclass/components
 import AppShell from '../myclass/components/AppShell';
 
 // Helper function to divide words into sets of 15
@@ -38,10 +38,11 @@ export default function QuizSetsPage() {
     fetchWords();
   }, []);
 
+  const iconBox = { display: 'inline-flex', alignItems: 'center', gap: '6px' };
+
   return (
     <AppShell userName="y/n">
-
-            <Link
+      <Link
         href="/myclass/lessons"
         style={{
           display: 'inline-flex',
@@ -59,6 +60,7 @@ export default function QuizSetsPage() {
       >
         ← Дасгалууд руу буцах
       </Link>
+
       {/* Header Banner */}
       <div className="top">
         <div>
@@ -66,13 +68,20 @@ export default function QuizSetsPage() {
           <p className="lead">Өөрийн түвшинд тохирсон дасгалыг сонгон хийгээрэй</p>
         </div>
         <div className="chips">
-          <div className="chip">🔥 0</div>
-          <div className="chip">💎 20</div>
+          <div className="chip" style={iconBox}>
+            <Flame size={16} /> 0
+          </div>
+          <div className="chip" style={iconBox}>
+            <Gem size={16} /> 20
+          </div>
         </div>
       </div>
 
       <h2 className="sec">
-        <span className="ib" aria-hidden="true">📖</span> Боломжит дасгалууд
+        <span className="ib" aria-hidden="true">
+          <BookOpen size={18} />
+        </span>{' '}
+        Боломжит дасгалууд
       </h2>
 
       {loading ? (
@@ -88,7 +97,9 @@ export default function QuizSetsPage() {
             return (
               <div key={index} className="tcard">
                 <span className="st a tcard-badge">15 Асуулт</span>
-                <div className="tcard-ic">📝</div>
+                <div className="tcard-ic">
+                  <FileText size={28} />
+                </div>
                 <h3>Дасгал #{setNumber}</h3>
                 <p>
                   Нийт {set.length} асуулттай зөв бичих дүрмийн дасгал багц.

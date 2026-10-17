@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Manrope } from "next/font/google";
+import { PenLine, LogOut, ChevronUp } from "lucide-react";
 import { mainNav } from "../data/nav";
 import { supabase } from "../../../lib/supabase";
 import "../dashboard/dashboard.css";
@@ -18,6 +19,7 @@ function NavLink({ item }) {
   const active =
     pathname === item.href ||
     (item.also && item.also.some((p) => pathname.startsWith(p)));
+  const Icon = item.icon;
 
   return (
     <Link
@@ -25,7 +27,9 @@ function NavLink({ item }) {
       className={active ? "nav-link on" : "nav-link"}
       aria-current={active ? "page" : undefined}
     >
-      <span className="ic" aria-hidden>{item.icon}</span>
+      <span className="ic" aria-hidden>
+        <Icon size={20} strokeWidth={2.2} />
+      </span>
       {item.label}
     </Link>
   );
@@ -162,7 +166,9 @@ export default function AppShell({ userName = "", children }) {
                 role="menuitem"
                 onClick={() => setMenuOpen(false)}
               >
-                <span className="ic" aria-hidden>✏️</span>
+                <span className="ic" aria-hidden>
+                  <PenLine size={18} />
+                </span>
                 Профайл засах
               </Link>
 
@@ -174,7 +180,9 @@ export default function AppShell({ userName = "", children }) {
                 role="menuitem"
                 onClick={openConfirm}
               >
-                <span className="ic" aria-hidden>🚪</span>
+                <span className="ic" aria-hidden>
+                  <LogOut size={18} />
+                </span>
                 Гарах
               </button>
             </div>
@@ -203,7 +211,9 @@ export default function AppShell({ userName = "", children }) {
               )}
             </i>
             <span className="me-name">{name || userName}</span>
-            <span className="chev" aria-hidden>⌃</span>
+            <span className="chev" aria-hidden>
+              <ChevronUp size={16} />
+            </span>
           </button>
         </div>
       </aside>
@@ -222,7 +232,9 @@ export default function AppShell({ userName = "", children }) {
             onClick={(e) => e.stopPropagation()}
             onSubmit={handleConfirmLogout}
           >
-            <div className="modal-ic" aria-hidden>🚪</div>
+            <div className="modal-ic" aria-hidden>
+              <LogOut size={28} />
+            </div>
             <h2 id="logout-title">Гарахдаа итгэлтэй байна уу?</h2>
             <p>Та системээс гарах гэж байна.</p>
 

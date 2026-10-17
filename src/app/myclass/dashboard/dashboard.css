@@ -391,4 +391,6 @@
   .hm-tile {
     transition: none;
   }
+  .tcard-ic { display: grid; place-items: center; }
+.sec .ib { display: inline-grid; place-items: center; vertical-align: middle; }
 }

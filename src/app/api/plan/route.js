@@ -1,12 +1,16 @@
+// File location: src/app/api/plan/route.js  (plain JavaScript: no TypeScript type annotations!)
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const MODEL = "claude-sonnet-5-5"; // cheaper and faster: "claude-haiku-5-5"
 const MAX_SCORE = 800; // the highest possible score in your app
 const COOLDOWN_MINUTES = 10; // how often one user may generate a new plan
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
 const TYPES = ["ancient", "grammar", "idioms", "script", "literary", "quiz"];
 
@@ -91,35 +95,53 @@ function parsePlan(text) {
   return plan;
 }
 
-// Gemini (Google AI Studio key)
+// Gemini (Google AI Studio key). Retries on temporary errors (overload, rate limit).
+const RETRY_STATUSES = [429, 500, 502, 503, 504];
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 async function generateWithGemini(userText) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": process.env.GEMINI_API_KEY,
-      },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM }] },
-        contents: [{ role: "user", parts: [{ text: userText }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          maxOutputTokens: 4096,
+  const MAX_ATTEMPTS = 3;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": process.env.GEMINI_API_KEY,
         },
-      }),
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM }] },
+          contents: [{ role: "user", parts: [{ text: userText }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            maxOutputTokens: 8192,
+          },
+        }),
+      }
+    );
+
+    if (res.ok) {
+      const json = await res.json();
+      const candidate = json?.candidates?.[0];
+      if (candidate?.finishReason === "MAX_TOKENS") {
+        throw new Error("Gemini хариу дундаа тасарлаа (MAX_TOKENS).");
+      }
+      const parts = candidate?.content?.parts || [];
+      return parts.map((p) => p.text || "").join("");
     }
-  );
 
-  if (!res.ok) {
-    // This shows the real reason in the terminal running `npm run dev`
-    throw new Error(`Gemini ${res.status}: ${await res.text()}`);
+    const errText = await res.text();
+    const retryable = RETRY_STATUSES.includes(res.status);
+    if (retryable && attempt < MAX_ATTEMPTS) {
+      console.warn(`Gemini ${res.status}, retry ${attempt}/${MAX_ATTEMPTS - 1}...`);
+      await sleep(attempt * 2000); // 2s, then 4s
+      continue;
+    }
+    // Real reason shows in the terminal running `npm run dev`
+    throw new Error(`Gemini ${res.status}: ${errText}`);
   }
-
-  const json = await res.json();
-  const parts = json?.candidates?.[0]?.content?.parts || [];
-  return parts.map((p) => p.text || "").join("");
 }
 
 // Claude (Anthropic API key)
@@ -127,20 +149,32 @@ async function generateWithClaude(userText) {
   const anthropic = new Anthropic(); // reads ANTHROPIC_API_KEY automatically
   const message = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 2500,
+    max_tokens: 3000,
     system: SYSTEM,
     messages: [{ role: "user", content: userText }],
   });
+  if (message.stop_reason === "max_tokens") {
+    throw new Error("Claude хариу дундаа тасарлаа (max_tokens).");
+  }
   return message.content
     .filter((b) => b.type === "text")
     .map((b) => b.text)
     .join("");
 }
 
-function generateText(userText) {
-  return process.env.GEMINI_API_KEY
-    ? generateWithGemini(userText)
-    : generateWithClaude(userText);
+async function generateText(userText) {
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      return await generateWithGemini(userText);
+    } catch (err) {
+      if (process.env.ANTHROPIC_API_KEY) {
+        console.error("Gemini failed, falling back to Claude:", err.message);
+        return generateWithClaude(userText);
+      }
+      throw err;
+    }
+  }
+  return generateWithClaude(userText);
 }
 
 // GET: return the user's score and their latest saved plan (no AI cost)
@@ -183,7 +217,7 @@ export async function GET(request) {
   }
 }
 
-// POST: ask Claude for a new plan and save it
+// POST: ask the AI for a new plan and save it
 export async function POST(request) {
   const ctx = await getUserContext(request);
   if (!ctx) {
@@ -258,9 +292,17 @@ export async function POST(request) {
     });
   } catch (err) {
     console.error(err);
-    return NextResponse.json(
-      { error: "Төлөвлөгөө үүсгэх үед алдаа гарлаа. Дахин оролдоно уу." },
-      { status: 500 }
-    );
+    const msg = String(err?.message || "");
+    const overloaded = /\b(503|429|529)\b/.test(msg);
+    const body = {
+      error: overloaded
+        ? "AI одоогоор ачаалалтай байна. Хэдэн минутын дараа дахин оролдоно уу."
+        : "Төлөвлөгөө үүсгэх үед алдаа гарлаа. Дахин оролдоно уу.",
+    };
+    // In development, also return the real reason so it's visible in the browser
+    if (process.env.NODE_ENV !== "production") {
+      body.detail = err?.message || String(err);
+    }
+    return NextResponse.json(body, { status: overloaded ? 503 : 500 });
   }
 }

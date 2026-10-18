@@ -2,6 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import {
+  ArrowLeft,
+  ArrowLeftRight,
+  BookOpen,
+  ClipboardCheck,
+  CircleAlert,
+  PenTool,
+  Search,
+  SearchX,
+  Loader2,
+  TriangleAlert,
+  ListChecks,
+} from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { saveMistake } from '@/lib/saveMistake'
 import { buildMixedRound } from '@/lib/quizBuilders'
@@ -20,18 +33,59 @@ const B_COL = ''
 const SKIP = new Set(['id', 'created_at', 'updated_at'])
 
 const css = `
-.back-btn{display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;padding:8px 16px;border-radius:999px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-weight:800;font-size:14px;text-decoration:none;cursor:pointer}
-.back-btn:hover{background:rgba(128,128,128,.12)}
-.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-.tab{padding:9px 20px;border-radius:999px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-weight:800;font-size:14px;cursor:pointer}
-.tab:hover{background:rgba(128,128,128,.12)}
-.tab.on{background:#0284c7;border-color:#0284c7;color:#fff}
-.search{width:100%;box-sizing:border-box;margin-bottom:12px;padding:12px 18px;border-radius:16px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-size:16px;outline:none}
-.search:focus{border-color:#0284c7}
-.count{opacity:.7;font-size:14px;font-weight:700;margin:0 0 14px}
-.words{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
-.word-main{font-size:24px;font-weight:800;margin:0 0 8px;word-break:break-word}
-.word-sub{margin:0;line-height:1.6;opacity:.85}
+.st{--tone:#16a34a;--tone-bg:rgba(22,163,74,.16)}
+
+.st{width:100%;min-width:0;box-sizing:border-box;align-self:stretch;text-align:left}
+.st .top,.st .lead{text-align:left;justify-content:flex-start}
+.st-card,.an-card{min-width:0}
+
+.st-back,.st-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-weight:800;font-size:14px;text-decoration:none;cursor:pointer;transition:background .2s,border-color .2s,transform .15s}
+.st-back{margin-bottom:18px;animation:st-rise .5s backwards}
+.st-back:hover,.st-btn:hover{background:rgba(128,128,128,.12);border-color:var(--tone)}
+.st-arl{transition:transform .2s}
+.st-back:hover .st-arl{transform:translateX(-4px)}
+.st-back:active,.st-btn:active{transform:scale(.96)}
+.st-back:focus-visible,.st-btn:focus-visible,.st-tab:focus-visible{outline:3px solid var(--tone);outline-offset:3px}
+
+.st-h1{display:flex;align-items:center;gap:12px}
+.st-hico{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:var(--tone-bg);color:var(--tone);animation:st-pop .6s cubic-bezier(.3,1.6,.5,1) backwards}
+
+.st-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;animation:st-rise .5s backwards}
+.st-tab{display:inline-flex;align-items:center;gap:8px;padding:9px 20px;border-radius:999px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-weight:800;font-size:14px;cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .15s,box-shadow .2s}
+.st-tab:hover{background:rgba(128,128,128,.12);transform:translateY(-2px)}
+.st-tab:hover svg{animation:st-wiggle .5s}
+.st-tab:active{transform:scale(.96)}
+.st-tab.on{background:var(--tone);border-color:var(--tone);color:#fff;box-shadow:0 6px 16px color-mix(in srgb,var(--tone) 35%,transparent)}
+
+.st-search{position:relative;margin-bottom:12px;animation:st-rise .5s .05s backwards}
+.st-search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);opacity:.55;pointer-events:none;transition:color .2s,opacity .2s}
+.st-search input{width:100%;box-sizing:border-box;padding:13px 18px 13px 46px;border-radius:16px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-size:16px;outline:none;transition:border-color .2s,box-shadow .2s}
+.st-search input:focus{border-color:var(--tone);box-shadow:0 0 0 4px color-mix(in srgb,var(--tone) 18%,transparent)}
+.st-search:focus-within svg{color:var(--tone);opacity:1}
+
+.st-count{display:inline-flex;align-items:center;gap:6px;margin:0 0 16px;padding:4px 12px;border-radius:999px;background:var(--tone-bg);color:var(--tone);font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+
+.st-words{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr))}
+.st-card{position:relative;overflow:hidden;padding-left:26px;animation:st-rise .55s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0)*40ms);transition:transform .25s ease,box-shadow .25s ease}
+.st-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(180deg,var(--tone),color-mix(in srgb,var(--tone) 40%,#fff));transform-origin:top;animation:st-grow .6s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0)*40ms + .15s)}
+.st-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px color-mix(in srgb,var(--tone) 22%,transparent)}
+.st-main{font-size:24px;font-weight:800;margin:0 0 8px;word-break:break-word}
+.st-sub{margin:0;font-size:17px;line-height:1.6;opacity:.85;overflow-wrap:anywhere}
+
+.st-state{display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;animation:st-rise .5s backwards}
+.st-spin{animation:st-spin 1s linear infinite}
+
+@keyframes st-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes st-grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes st-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+@keyframes st-wiggle{25%{transform:rotate(-14deg)}50%{transform:rotate(12deg)}75%{transform:rotate(-6deg)}}
+@keyframes st-spin{to{transform:rotate(360deg)}}
+
+@media (max-width:600px){.st-card{padding:14px 14px 14px 22px}.st-h1{font-size:28px}.an-card{padding:20px}}
+
+@media (prefers-reduced-motion:reduce){
+  .st *,.st *::before{animation:none!important;transition:none!important}
+}
 `
 
 export default function ScriptPage() {
@@ -83,7 +137,7 @@ export default function ScriptPage() {
         } else {
           setCols({ a, b })
           setRows(data)
-          // Lessons card links here with ?mode=quiz -> start right away
+          // A link with ?mode=quiz starts right away
           if (new URLSearchParams(window.location.search).get('mode') === 'quiz') {
             setQuestions(makeRound(data, a, b, false))
             setRound((r) => r + 1)
@@ -136,114 +190,136 @@ export default function ScriptPage() {
     <AppShell userName="y/n">
       <style>{css}</style>
 
-      <Link href="/myclass/lessons" className="back-btn">
-        ← Хичээлүүд рүү буцах
-      </Link>
+      <div className="st">
+        <Link href="/myclass/lessons" className="st-back">
+          <ArrowLeft className="st-arl" size={16} aria-hidden />
+          Хичээлүүд рүү буцах
+        </Link>
 
-      <div className="top">
-        <div>
-          <h1>Монгол бичиг</h1>
-          <p className="lead">
-            {mode === 'study'
-              ? 'Үгсийг уншаад шалгалт өгөөрэй'
-              : 'Сонго, бич, хосыг холбо — зөв хариултыг ол'}
-          </p>
+        <div className="top">
+          <div>
+            <h1 className="st-h1">
+              <span className="st-hico">
+                <PenTool size={24} aria-hidden />
+              </span>
+              Монгол бичиг
+            </h1>
+            <p className="lead">
+              {mode === 'study'
+                ? 'Үгсийг уншаад шалгалт өгөөрэй'
+                : 'Сонго, бич, хосыг холбо — зөв хариултыг ол'}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {error && (
-        <div className="panel" style={{ color: '#ef4444', fontWeight: 700 }}>
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="panel st-state" style={{ color: '#ef4444', fontWeight: 700 }}>
+            <TriangleAlert size={20} aria-hidden />
+            {error}
+          </div>
+        )}
 
-      {loading && (
-        <div className="panel" style={{ textAlign: 'center', padding: '40px' }}>
-          <p style={{ color: 'var(--mute)', fontWeight: '700' }}>
-            Дасгалуудыг ачаалж байна...
-          </p>
-        </div>
-      )}
+        {loading && (
+          <div className="panel st-state" style={{ padding: '40px' }}>
+            <Loader2 className="st-spin" size={20} aria-hidden />
+            <span style={{ color: 'var(--mute)', fontWeight: 700 }}>
+              Дасгалуудыг ачаалж байна...
+            </span>
+          </div>
+        )}
 
-      {ready && (
-        <div className="tabs">
-          <button
-            onClick={() => setMode('study')}
-            className={`tab ${mode === 'study' ? 'on' : ''}`}
-          >
-            Үгс үзэх
-          </button>
-          <button
-            onClick={() => startQuiz()}
-            className={`tab ${mode === 'quiz' ? 'on' : ''}`}
-          >
-            Шалгалт
-          </button>
-          {mode === 'quiz' && (
-            <button onClick={toggleFlip} className="tab">
-              Чиглэл солих
+        {ready && (
+          <div className="st-tabs">
+            <button
+              onClick={() => setMode('study')}
+              className={`st-tab ${mode === 'study' ? 'on' : ''}`}
+            >
+              <BookOpen size={16} aria-hidden />
+              Үгс үзэх
             </button>
-          )}
-        </div>
-      )}
-
-      {/* ---------- Study ---------- */}
-      {ready && mode === 'study' && (
-        <>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Хайх"
-            aria-label="Хайх"
-            className="search"
-          />
-          <p className="count">
-            {filtered.length} / {rows.length}
-          </p>
-
-          <div className="words">
-            {filtered.map((r) => (
-              <div key={r.id} className="panel">
-                <p className="word-main">{String(r[cols.a])}</p>
-                <p className="word-sub">{String(r[cols.b])}</p>
-              </div>
-            ))}
-            {filtered.length === 0 && (
-              <div className="panel" style={{ textAlign: 'center' }}>
-                Олдсонгүй. Өөр үгээр хайгаарай.
-              </div>
+            <button
+              onClick={() => startQuiz()}
+              className={`st-tab ${mode === 'quiz' ? 'on' : ''}`}
+            >
+              <ClipboardCheck size={16} aria-hidden />
+              Шалгалт
+            </button>
+            {mode === 'quiz' && (
+              <button onClick={toggleFlip} className="st-tab">
+                <ArrowLeftRight size={16} aria-hidden />
+                Чиглэл солих
+              </button>
             )}
           </div>
-        </>
-      )}
+        )}
 
-      {/* ---------- Quiz (Duolingo style, mixed question types) ---------- */}
-      {ready && mode === 'quiz' && questions.length > 0 && (
-        <DuoQuiz
-          key={round}
-          questions={questions}
-          label={`${promptCol}:`}
-          promptSize={24}
-          onAnswer={handleAnswer}
-          onRestart={() => startQuiz()}
-          actions={
-            <>
-              <Link href="/myclass/mistakes" className="back-btn" style={{ marginBottom: 0 }}>
-                Алдсанаа харах
-              </Link>
-              <button
-                type="button"
-                onClick={() => setMode('study')}
-                className="back-btn"
-                style={{ marginBottom: 0 }}
-              >
-                Үгс үзэх
-              </button>
-            </>
-          }
-        />
-      )}
+        {/* ---------- Study ---------- */}
+        {ready && mode === 'study' && (
+          <>
+            <div className="st-search">
+              <Search size={18} aria-hidden />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Хайх"
+                aria-label="Хайх"
+              />
+            </div>
+            <p className="st-count">
+              <ListChecks size={14} aria-hidden />
+              {filtered.length} / {rows.length}
+            </p>
+
+            <div className="st-words">
+              {filtered.map((r, idx) => (
+                <div
+                  key={r.id}
+                  className="panel st-card"
+                  style={{ '--i': Math.min(idx, 12) }}
+                >
+                  <p className="st-main">{String(r[cols.a])}</p>
+                  <p className="st-sub">{String(r[cols.b])}</p>
+                </div>
+              ))}
+              {filtered.length === 0 && (
+                <div className="panel st-state" style={{ gridColumn: '1 / -1' }}>
+                  <SearchX size={20} aria-hidden />
+                  Олдсонгүй. Өөр үгээр хайгаарай.
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ---------- Quiz (Duolingo style, mixed question types) ---------- */}
+        {ready && mode === 'quiz' && questions.length > 0 && (
+          <DuoQuiz
+            key={round}
+            questions={questions}
+            label={`${promptCol}:`}
+            promptSize={24}
+            onAnswer={handleAnswer}
+            onRestart={() => startQuiz()}
+            actions={
+              <>
+                <Link href="/myclass/mistakes" className="st-btn">
+                  <CircleAlert size={16} aria-hidden />
+                  Алдсанаа харах
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setMode('study')}
+                  className="st-btn"
+                >
+                  <BookOpen size={16} aria-hidden />
+                  Үгс үзэх
+                </button>
+              </>
+            }
+          />
+        )}
+      </div>
     </AppShell>
   )
 }

@@ -3,20 +3,30 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Hand, Trophy, Sparkles, Repeat, PartyPopper } from "lucide-react";
+import {
+  Hand,
+  Trophy,
+  Sparkles,
+  Repeat,
+  PartyPopper,
+  BookOpen,
+  MessageSquareQuote,
+  CircleAlert,
+  Bookmark,
+  ArrowRight,
+} from "lucide-react";
 import AppShell from "../components/AppShell";
 import { supabase } from "../../../lib/supabase";
 import "./dashboard.css";
+import "./dashboard-ui.css";
 
-/* ---------- Links (change here if your routes differ) ---------- */
+/* ---------- Links ---------- */
 const PLAN_HREF = "/myclass/plan";
 const MISTAKES_HREF = "/myclass/mistakes";
 const SAVED_HREF = "/myclass/saved";
 
-const RING_R = 44;
+const RING_R = 52;
 const RING_C = 2 * Math.PI * RING_R;
-
-const inline = { display: "inline-flex", alignItems: "center", gap: 8 };
 
 /* ---------- Data helpers ---------- */
 async function fetchPlan(token) {
@@ -31,7 +41,6 @@ async function fetchPlan(token) {
   }
 }
 
-// null means "could not read" (table or column missing), a number is the count
 async function countRows(table, userId) {
   const { count, error } = await supabase
     .from(table)
@@ -57,7 +66,6 @@ async function recentSaved(userId) {
   return res.error ? null : res.data;
 }
 
-// The same entry for the whole day, a different one tomorrow
 async function dailyPick(table) {
   const { data, error } = await supabase.from(table).select("*").limit(200);
   if (error || !data?.length) return null;
@@ -65,7 +73,6 @@ async function dailyPick(table) {
   return data[day % data.length];
 }
 
-/* ---------- Showing a database row without knowing its columns ---------- */
 const SKIP = new Set(["id", "created_at", "updated_at", "user_id"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-/i;
 
@@ -98,7 +105,6 @@ function describe(row) {
   return { title, meaning };
 }
 
-/* ---------- Plan progress ---------- */
 function summarizePlan(plan, done) {
   let total = 0;
   let finished = 0;
@@ -127,45 +133,89 @@ function summarizePlan(plan, done) {
   };
 }
 
-/* ---------- Small pieces ---------- */
-function Skeleton({ lines = 3 }) {
+/* ---------- Animation helpers ---------- */
+function useCountUp(target, active, duration = 1000) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!active || typeof target !== "number") return;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setValue(target);
+      return;
+    }
+
+    let raf;
+    let start = null;
+    const tick = (t) => {
+      if (start === null) start = t;
+      const p = Math.min((t - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(target * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, active, duration]);
+
+  return value;
+}
+
+/* ---------- UI pieces ---------- */
+function Skeleton({ lines = 2 }) {
   return (
     <div aria-busy="true">
       {Array.from({ length: lines }).map((_, i) => (
-        <div key={i} className="hm-skel" style={{ width: `${90 - i * 18}%` }} />
+        <div
+          key={i}
+          className="db-skel"
+          style={{ width: `${88 - i * 18}%` }}
+        />
       ))}
     </div>
   );
 }
 
-function DailyCard({ title, row, ready, href, linkText }) {
+function CardHead({ Icon, title }) {
+  return (
+    <div className="db-card-head">
+      <span className="db-icon">
+        <Icon size={18} aria-hidden />
+      </span>
+      <h3>{title}</h3>
+    </div>
+  );
+}
+
+function DailyCard({ tone, Icon, title, row, ready, href, linkText, index }) {
   const d = row ? describe(row) : null;
   return (
-    <section className="panel hm-card">
-      <h3>{title}</h3>
+    <section className={`db-card db-in db-tone-${tone}`} style={{ "--i": index }}>
+      <CardHead Icon={Icon} title={title} />
       {!ready ? (
-        <Skeleton lines={2} />
+        <Skeleton lines={3} />
       ) : d && d.title ? (
         <>
-          <p className="hm-word">{d.title}</p>
-          {d.meaning && <p className="hm-muted">{d.meaning}</p>}
-          <Link href={href} className="hm-link">
-            {linkText}
+          <p className="db-word">{d.title}</p>
+          {d.meaning && <p className="db-muted db-meaning">{d.meaning}</p>}
+          <Link href={href} className="db-link">
+            {linkText} <ArrowRight size={16} aria-hidden />
           </Link>
         </>
       ) : (
-        <p className="hm-muted">Өнөөдрийн санал олдсонгүй.</p>
+        <p className="db-muted">Өнөөдрийн санал олдсонгүй.</p>
       )}
     </section>
   );
 }
 
-/* ---------- Page ---------- */
 export default function DashboardPage() {
   const router = useRouter();
 
   const [userName, setUserName] = useState("");
   const [ready, setReady] = useState(false);
+  const [drawn, setDrawn] = useState(false);
   const [planData, setPlanData] = useState(null);
   const [done, setDone] = useState({});
   const [mistakes, setMistakes] = useState(null);
@@ -213,7 +263,13 @@ export default function DashboardPage() {
     };
   }, []);
 
-  // Ticked tasks are kept by the plan page in this browser
+  // Start the ring / progress bar animation once data has arrived
+  useEffect(() => {
+    if (!ready) return;
+    const id = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(id);
+  }, [ready]);
+
   const storageKey = planData?.createdAt ? `plan-done:${planData.createdAt}` : null;
   useEffect(() => {
     if (!storageKey) return;
@@ -234,191 +290,181 @@ export default function DashboardPage() {
   const maxScore = planData?.maxScore || 800;
   const ratio = Math.min(Math.max(score / maxScore, 0), 1);
 
+  const scoreShown = useCountUp(score, ready);
+  const mistakesShown = useCountUp(mistakes ?? 0, ready);
+
   return (
     <AppShell userName={userName}>
-      <div className="top">
-        <div>
-          <h1>
-            Өдрийн мэнд,
-            <small style={inline}>
-              {userName} <Hand size={20} aria-hidden />
-            </small>
-          </h1>
-          <p className="lead">Өнөөдөр юу сурахаа сонгоцгооё</p>
-        </div>
-        <div className="chips">
-          <div className="chip" style={inline}>
-            <Trophy size={16} aria-hidden /> {score}
+      <div className="db-root">
+        {/* Header */}
+        <header className="db-top db-in" style={{ "--i": 0 }}>
+          <div>
+            <h1>
+              Өдрийн мэнд,{" "}
+              <span className="db-name">
+                {userName} <Hand className="db-wave" size={20} aria-hidden />
+              </span>
+            </h1>
+            <p className="db-lead">Өнөөдөр юу сурахаа сонгоцгооё</p>
           </div>
-        </div>
-      </div>
+          <div className="db-chip">
+            <Trophy size={18} aria-hidden /> {scoreShown}
+          </div>
+        </header>
 
-      {/* Plan + score */}
-      <div className="hm-hero">
-        <section className="panel hm-card">
-          {!ready ? (
-            <Skeleton lines={4} />
-          ) : plan && summary ? (
-            <>
-              <h3 style={inline}>
-                {summary.allDone ? (
-                  <>
-                    Төлөвлөгөөгөө дуусгалаа <PartyPopper size={20} aria-hidden />
-                  </>
-                ) : (
-                  `${summary.week + 1}-р долоо хоног: ${plan.weeks[summary.week].title}`
-                )}
-              </h3>
-              <p className="hm-muted">
-                {summary.allDone
-                  ? "Оноогоо шинэчлээд шинэ төлөвлөгөө аваарай."
-                  : plan.weeks[summary.week].goal}
-              </p>
-
-              <div className="hm-bar" aria-hidden>
-                <span style={{ width: `${summary.percent}%` }} />
-              </div>
-              <div className="hm-row">
-                <span>
-                  {summary.finished}/{summary.total} даалгавар
-                </span>
-                <span>{summary.percent}%</span>
-              </div>
-
-              {summary.nextTask && (
-                <p className="hm-next">
-                  Дараагийн даалгавар: <strong>{summary.nextTask.title}</strong> (
-                  {summary.nextTask.minutes} мин)
+        {/* Hero */}
+        <div className="db-hero">
+          <section className="db-card db-plan db-in" style={{ "--i": 1 }}>
+            {!ready ? (
+              <Skeleton lines={4} />
+            ) : plan && summary ? (
+              <>
+                <h2>
+                  {summary.allDone ? (
+                    <>
+                      Төлөвлөгөөгөө дуусгалаа <PartyPopper size={22} aria-hidden />
+                    </>
+                  ) : (
+                    `${summary.week + 1}-р долоо хоног: ${plan.weeks[summary.week].title}`
+                  )}
+                </h2>
+                <p className="db-plan-goal">
+                  {summary.allDone
+                    ? "Оноогоо шинэчлээд шинэ төлөвлөгөө аваарай."
+                    : plan.weeks[summary.week].goal}
                 </p>
-              )}
 
-              <button
-                type="button"
-                className="btn"
-                onClick={() => router.push(PLAN_HREF)}
-              >
-                {summary.allDone ? "Шинэ төлөвлөгөө" : "Үргэлжлүүлэх"}
-              </button>
-            </>
-          ) : (
-            <>
-              <h3>Төлөвлөгөө хараахан алга</h3>
-              <p className="hm-muted">
-                Оноогоо оруулаад өөрт тохирсон 4 долоо хоногийн төлөвлөгөө
-                аваарай.
-              </p>
-              <button
-                type="button"
-                className="btn hm-gap"
-                onClick={() => router.push(PLAN_HREF)}
-              >
-                Төлөвлөгөө үүсгэх
-              </button>
-            </>
-          )}
-        </section>
+                <div className="db-plan-foot">
+                  <div
+                    className="db-bar"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={summary.percent}
+                  >
+                    <span style={{ width: `${drawn ? summary.percent : 0}%` }} />
+                  </div>
+                  <div className="db-row">
+                    <span>
+                      {summary.finished}/{summary.total} даалгавар
+                    </span>
+                    <span>{summary.percent}%</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="db-btn db-btn--light"
+                    onClick={() => router.push(PLAN_HREF)}
+                  >
+                    {summary.allDone ? "Шинэ төлөвлөгөө" : "Үргэлжлүүлэх"}
+                    <ArrowRight size={18} aria-hidden />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2>Төлөвлөгөө хараахан алга</h2>
+                <p className="db-plan-goal">
+                  Оноогоо оруулаад өөрт тохирсон төлөвлөгөө аваарай.
+                </p>
+                <div className="db-plan-foot">
+                  <button
+                    type="button"
+                    className="db-btn db-btn--light"
+                    onClick={() => router.push(PLAN_HREF)}
+                  >
+                    Төлөвлөгөө үүсгэх
+                    <ArrowRight size={18} aria-hidden />
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
 
-        <section className="panel hm-card hm-score">
-          <div className="hm-ring" aria-label={`Оноо ${score} / ${maxScore}`}>
-            <svg viewBox="0 0 100 100" aria-hidden>
-              <circle className="hm-ring-bg" cx="50" cy="50" r={RING_R} />
-              <circle
-                className="hm-ring-fg"
-                cx="50"
-                cy="50"
-                r={RING_R}
-                strokeDasharray={RING_C}
-                strokeDashoffset={RING_C * (1 - ratio)}
-              />
-            </svg>
-            <div className="hm-ring-text">
-              <strong>{score}</strong>
-              <span>/ {maxScore}</span>
+          <section className="db-card db-score db-in" style={{ "--i": 2 }}>
+            <div className="db-ring" role="img" aria-label={`Оноо ${score} / ${maxScore}`}>
+              <svg viewBox="0 0 120 120" aria-hidden>
+                <circle className="db-ring-bg" cx="60" cy="60" r={RING_R} />
+                <circle
+                  className="db-ring-fg"
+                  cx="60"
+                  cy="60"
+                  r={RING_R}
+                  strokeDasharray={RING_C}
+                  strokeDashoffset={RING_C * (1 - (drawn ? ratio : 0))}
+                />
+              </svg>
+              <div className="db-ring-text">
+                <strong>{scoreShown}</strong>
+                <span>/ {maxScore}</span>
+              </div>
             </div>
-          </div>
-          <h3>Таны оноо</h3>
-          <Link href={PLAN_HREF} className="hm-link">
-            Оноогоо шинэчлэх
-          </Link>
-        </section>
-      </div>
+            <Link href={PLAN_HREF} className="db-link">
+              Оноо шинэчлэх <ArrowRight size={16} aria-hidden />
+            </Link>
+          </section>
+        </div>
 
-      {/* Word and idiom of the day */}
-      <h2 className="sec">
-        <span className="ib" aria-hidden>
-          <Sparkles size={18} />
-        </span>
-        Өдрийн санал
-      </h2>
-      <div className="hm-two">
-        <DailyCard
-          title="Өдрийн үг"
-          row={word}
-          ready={ready}
-          href="/ancient"
-          linkText="Бүх үгийг үзэх"
-        />
-        <DailyCard
-          title="Өдрийн хэлц"
-          row={idiom}
-          ready={ready}
-          href="/idioms"
-          linkText="Бүх хэлцийг үзэх"
-        />
-      </div>
+        {/* Daily picks & review */}
+        <div className="db-grid">
+          <DailyCard
+            tone="blue"
+            Icon={BookOpen}
+            title="Өдрийн үг"
+            row={word}
+            ready={ready}
+            href="/ancient"
+            linkText="Үзэх"
+            index={3}
+          />
+          <DailyCard
+            tone="teal"
+            Icon={MessageSquareQuote}
+            title="Өдрийн хэлц"
+            row={idiom}
+            ready={ready}
+            href="/idioms"
+            linkText="Үзэх"
+            index={4}
+          />
 
-      {/* Review */}
-      <h2 className="sec">
-        <span className="ib" aria-hidden>
-          <Repeat size={18} />
-        </span>
-        Давтлага
-      </h2>
-      <div className="hm-two">
-        <section className="panel hm-card">
-          <h3>Алдсан зүйлс</h3>
-          {!ready ? (
-            <Skeleton lines={2} />
-          ) : mistakes === null ? (
-            <p className="hm-muted">Мэдээлэл ачаалж чадсангүй.</p>
-          ) : mistakes === 0 ? (
-            <p className="hm-muted">Одоогоор алдаа байхгүй. Гайхалтай!</p>
-          ) : (
-            <>
-              <p className="hm-num">{mistakes}</p>
-              <p className="hm-muted">давтах зүйл байна</p>
-              <button
-                type="button"
-                className="btn hm-gap"
-                onClick={() => router.push(MISTAKES_HREF)}
-              >
-                Давтах
-              </button>
-            </>
-          )}
-        </section>
+          <section className="db-card db-in db-tone-amber" style={{ "--i": 5 }}>
+            <CardHead Icon={CircleAlert} title="Алдсан зүйлс" />
+            {!ready ? (
+              <Skeleton lines={2} />
+            ) : mistakes === 0 ? (
+              <p className="db-muted db-empty">
+                <Sparkles size={18} aria-hidden /> Алдах зүйл алга!
+              </p>
+            ) : (
+              <>
+                <p className="db-big">{mistakesShown}</p>
+                <button
+                  type="button"
+                  className="db-btn"
+                  onClick={() => router.push(MISTAKES_HREF)}
+                >
+                  <Repeat size={16} aria-hidden /> Давтах
+                </button>
+              </>
+            )}
+          </section>
 
-        <section className="panel hm-card">
-          <h3>Саяхан хадгалсан</h3>
-          {!ready ? (
-            <Skeleton lines={3} />
-          ) : !saved || saved.length === 0 ? (
-            <p className="hm-muted">Хадгалсан зүйл хараахан алга.</p>
-          ) : (
-            <>
-              <ul className="hm-list">
-                {saved.map((row, i) => (
-                  <li key={row.id ?? i}>
-                    {describe(row).title || "Хадгалсан зүйл"}
-                  </li>
-                ))}
-              </ul>
-              <Link href={SAVED_HREF} className="hm-link">
-                Бүгдийг харах
-              </Link>
-            </>
-          )}
-        </section>
+          <section className="db-card db-in db-tone-violet" style={{ "--i": 6 }}>
+            <CardHead Icon={Bookmark} title="Хадгалсан" />
+            {!ready ? (
+              <Skeleton lines={2} />
+            ) : !saved || saved.length === 0 ? (
+              <p className="db-muted">Хадгалсан алга.</p>
+            ) : (
+              <>
+                <p className="db-word">{describe(saved[0]).title}</p>
+                <Link href={SAVED_HREF} className="db-link">
+                  Бүгдийг харах <ArrowRight size={16} aria-hidden />
+                </Link>
+              </>
+            )}
+          </section>
+        </div>
       </div>
     </AppShell>
   );

@@ -2,18 +2,36 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  Map as MapIcon,
+  Target,
+  Sparkles,
+  Loader2,
+  Clock,
+  ArrowRight,
+  Check,
+  CircleAlert,
+  RefreshCw,
+  ListChecks,
+  ScrollText,
+  PenLine,
+  MessageSquareQuote,
+  Brush,
+  Feather,
+  ClipboardCheck,
+} from "lucide-react";
 import AppShell from "../components/AppShell";
 import { supabase } from "../../../lib/supabase";
 import "./plan.css";
 
 // Where each task type sends the user. Change the hrefs if your routes differ.
 const TYPES = {
-  ancient: { label: "Эртний үг", href: "/ancient" },
-  grammar: { label: "Дүрэм", href: "/grammar" },
-  idioms: { label: "Хэлц үг", href: "/idioms" },
-  script: { label: "Монгол бичиг", href: "/script" },
-  literary: { label: "Уран дүрслэл", href: "/uran-durslel" },
-  quiz: { label: "Шалгалт", href: "/quiz" },
+  ancient: { label: "Эртний үг", href: "/ancient", Icon: ScrollText },
+  grammar: { label: "Дүрэм", href: "/grammar", Icon: PenLine },
+  idioms: { label: "Хэлц үг", href: "/idioms", Icon: MessageSquareQuote },
+  script: { label: "Монгол бичиг", href: "/script", Icon: Brush },
+  literary: { label: "Уран дүрслэл", href: "/uran-durslel", Icon: Feather },
+  quiz: { label: "Шалгалт", href: "/quiz", Icon: ClipboardCheck },
 };
 
 const RING_R = 44;
@@ -25,24 +43,6 @@ async function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : null;
 }
 
-function CheckIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  );
-}
-
 export default function PlanPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -50,6 +50,7 @@ export default function PlanPage() {
   const [data, setData] = useState(null); // { score, maxScore, plan, planScore, createdAt }
   const [done, setDone] = useState({}); // { "0-1": true }
   const [scoreInput, setScoreInput] = useState("");
+  const [drawn, setDrawn] = useState(false);
 
   const storageKey = data?.createdAt ? `plan-done:${data.createdAt}` : null;
 
@@ -76,6 +77,13 @@ export default function PlanPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Start the ring animation once the page has loaded
+  useEffect(() => {
+    if (loading) return;
+    const id = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(id);
+  }, [loading]);
 
   // Restore the ticked tasks of this plan
   useEffect(() => {
@@ -165,7 +173,12 @@ export default function PlanPage() {
     <AppShell>
       <div className="pl">
         <header className="pl-top">
-          <h1>Миний төлөвлөгөө</h1>
+          <h1>
+            <span className="pl-hico">
+              <MapIcon size={24} aria-hidden />
+            </span>
+            Миний төлөвлөгөө
+          </h1>
           <p>Оноондоо тохирсон 4 долоо хоногийн сургалтын зам.</p>
         </header>
 
@@ -183,7 +196,7 @@ export default function PlanPage() {
                     cy="50"
                     r={RING_R}
                     strokeDasharray={RING_C}
-                    strokeDashoffset={RING_C * (1 - ratio)}
+                    strokeDashoffset={RING_C * (1 - (drawn ? ratio : 0))}
                   />
                 </svg>
                 <div className="pl-ring-text">
@@ -200,7 +213,10 @@ export default function PlanPage() {
                 </p>
 
                 <label className="pl-score">
-                  <span>Оноогоо оруулна уу</span>
+                  <span className="pl-score-label">
+                    <Target size={16} aria-hidden />
+                    Оноогоо оруулна уу
+                  </span>
                   <input
                     type="number"
                     inputMode="numeric"
@@ -217,7 +233,7 @@ export default function PlanPage() {
                 {plan && (
                   <div className="pl-progress">
                     <div className="pl-bar" aria-hidden>
-                      <span style={{ width: `${percent}%` }} />
+                      <span style={{ width: `${drawn ? percent : 0}%` }} />
                     </div>
                     <small>
                       {doneTasks}/{totalTasks} даалгавар
@@ -227,8 +243,11 @@ export default function PlanPage() {
 
                 {outdated && (
                   <p className="pl-warn">
-                    Таны оноо өөрчлөгдсөн ({data.planScore} → {score}). Шинэ
-                    төлөвлөгөө үүсгэж болно.
+                    <RefreshCw size={16} aria-hidden />
+                    <span>
+                      Таны оноо өөрчлөгдсөн ({data.planScore} → {score}). Шинэ
+                      төлөвлөгөө үүсгэж болно.
+                    </span>
                   </p>
                 )}
               </div>
@@ -239,22 +258,30 @@ export default function PlanPage() {
                 onClick={generate}
                 disabled={generating}
               >
-                {generating
-                  ? "AI бэлдэж байна..."
-                  : plan
-                  ? "Шинэ төлөвлөгөө үүсгэх"
-                  : "Төлөвлөгөө үүсгэх"}
+                {generating ? (
+                  <>
+                    <Loader2 className="pl-spin" size={18} aria-hidden />
+                    AI бэлдэж байна...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={18} aria-hidden />
+                    {plan ? "Шинэ төлөвлөгөө үүсгэх" : "Төлөвлөгөө үүсгэх"}
+                  </>
+                )}
               </button>
             </section>
 
             {error && (
               <div className="pl-error" role="alert">
+                <CircleAlert size={18} aria-hidden />
                 {error}
               </div>
             )}
 
             {generating && (
               <p className="pl-wait">
+                <Loader2 className="pl-spin" size={16} aria-hidden />
                 Төлөвлөгөө бэлдэж байна. Энэ нь 10-20 секунд үргэлжилж болно.
               </p>
             )}
@@ -267,15 +294,24 @@ export default function PlanPage() {
                   const count = w.tasks.filter((_, ti) => done[`${wi}-${ti}`]).length;
 
                   return (
-                    <li key={wi} className={`pl-week ${state}`}>
+                    <li
+                      key={wi}
+                      className={`pl-week ${state}`}
+                      style={{ "--i": Math.min(wi, 6) }}
+                    >
                       <span className="pl-node" aria-hidden>
-                        {state === "done" ? <CheckIcon /> : wi + 1}
+                        {state === "done" ? (
+                          <Check size={20} strokeWidth={3} />
+                        ) : (
+                          wi + 1
+                        )}
                       </span>
 
                       <div className="pl-card">
                         <div className="pl-week-head">
                           <h3>{w.title}</h3>
                           <span className="pl-count">
+                            <ListChecks size={15} aria-hidden />
                             {count}/{w.tasks.length}
                           </span>
                         </div>
@@ -285,6 +321,7 @@ export default function PlanPage() {
                           {w.tasks.map((t, ti) => {
                             const key = `${wi}-${ti}`;
                             const meta = TYPES[t.type];
+                            const TypeIcon = meta?.Icon || Sparkles;
                             return (
                               <li key={key} className={done[key] ? "done" : ""}>
                                 <label className="pl-check">
@@ -297,12 +334,17 @@ export default function PlanPage() {
                                   <span className="pl-task">{t.title}</span>
                                 </label>
                                 <span className={`pl-chip ${t.type}`}>
+                                  <TypeIcon size={14} aria-hidden />
                                   {meta?.label || t.type}
                                 </span>
-                                <span className="pl-min">{t.minutes} мин</span>
+                                <span className="pl-min">
+                                  <Clock size={14} aria-hidden />
+                                  {t.minutes} мин
+                                </span>
                                 {meta && (
                                   <Link href={meta.href} className="pl-go">
                                     Эхлэх
+                                    <ArrowRight size={14} aria-hidden />
                                   </Link>
                                 )}
                               </li>
@@ -317,6 +359,9 @@ export default function PlanPage() {
             ) : (
               !error && (
                 <div className="pl-empty">
+                  <span className="pl-empty-ico">
+                    <Sparkles size={28} aria-hidden />
+                  </span>
                   <strong>Төлөвлөгөө хараахан үүсээгүй байна</strong>
                   <p>
                     Дээрх товчийг дарвал таны оноонд тааруулсан долоо хоног

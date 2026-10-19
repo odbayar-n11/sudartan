@@ -33,11 +33,13 @@ const B_COL = ''
 const SKIP = new Set(['id', 'created_at', 'updated_at'])
 
 const css = `
-.st{--tone:#16a34a;--tone-bg:rgba(22,163,74,.16)}
+.sx{--tone:#16a34a;--tone-bg:rgba(22,163,74,.16)}
 
-.st{width:100%;min-width:0;box-sizing:border-box;align-self:stretch;text-align:left}
-.st .top,.st .lead{text-align:left;justify-content:flex-start}
+.sx{width:100%;min-width:0;box-sizing:border-box;align-self:stretch;text-align:left}
+.sx .top,.sx .lead{text-align:left;justify-content:flex-start}
 .st-card,.an-card{min-width:0}
+.sx .panel,.sx .panel p,.sx .panel div{text-align:left}
+.sx .st-state{text-align:center}
 
 .st-back,.st-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-weight:800;font-size:14px;text-decoration:none;cursor:pointer;transition:background .2s,border-color .2s,transform .15s}
 .st-back{margin-bottom:18px;animation:st-rise .5s backwards}
@@ -84,7 +86,7 @@ const css = `
 @media (max-width:600px){.st-card{padding:14px 14px 14px 22px}.st-h1{font-size:28px}.an-card{padding:20px}}
 
 @media (prefers-reduced-motion:reduce){
-  .st *,.st *::before{animation:none!important;transition:none!important}
+  .sx *,.sx *::before{animation:none!important;transition:none!important}
 }
 `
 
@@ -190,7 +192,7 @@ export default function ScriptPage() {
     <AppShell userName="y/n">
       <style>{css}</style>
 
-      <div className="st">
+      <div className="sx">
         <Link href="/myclass/lessons" className="st-back">
           <ArrowLeft className="st-arl" size={16} aria-hidden />
           Хичээлүүд рүү буцах

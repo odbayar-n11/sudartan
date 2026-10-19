@@ -27,10 +27,10 @@ const TOPIC = 'ancient'
 const GROUP_SIZE = 10
 
 const css = `
-.st{--tone:#d9730d;--tone-bg:rgba(217,115,13,.16)}
+.sx{--tone:#d9730d;--tone-bg:rgba(217,115,13,.16)}
 
-.st{width:100%;min-width:0;box-sizing:border-box;align-self:stretch;text-align:left}
-.st .top,.st .lead{text-align:left;justify-content:flex-start}
+.sx{width:100%;min-width:0;box-sizing:border-box;align-self:stretch;text-align:left}
+.sx .top,.sx .lead{text-align:left;justify-content:flex-start}
 .st-card,.an-card{min-width:0}
 
 .st-back,.st-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-weight:800;font-size:14px;text-decoration:none;cursor:pointer;transition:background .2s,border-color .2s,transform .15s}
@@ -80,7 +80,7 @@ const css = `
 @media (max-width:600px){.st-card{padding:14px 14px 14px 22px}.st-h1{font-size:28px}.an-card{padding:20px}}
 
 @media (prefers-reduced-motion:reduce){
-  .st *,.st *::before{animation:none!important;transition:none!important}
+  .sx *,.sx *::before{animation:none!important;transition:none!important}
 }
 `
 
@@ -163,7 +163,7 @@ export default function AncientPage() {
     <AppShell userName="y/n">
       <style>{css}</style>
 
-      <div className="st">
+      <div className="sx">
         {/* Back button */}
         {active === null ? (
           <Link href="/myclass/lessons" className="st-back">
@@ -294,4 +294,4 @@ export default function AncientPage() {
       </div>
     </AppShell>
   )
-} 
+}

@@ -31,11 +31,13 @@ const TOPIC = 'grammar'
 const ROUND_SIZE = 10
 
 const css = `
-.st{--tone:#0284c7;--tone-bg:rgba(2,132,199,.15)}
+.sx{--tone:#0284c7;--tone-bg:rgba(2,132,199,.15)}
 
-.st{width:100%;min-width:0;box-sizing:border-box;align-self:stretch;text-align:left}
-.st .top,.st .lead{text-align:left;justify-content:flex-start}
+.sx{width:100%;min-width:0;box-sizing:border-box;align-self:stretch;text-align:left}
+.sx .top,.sx .lead{text-align:left;justify-content:flex-start}
 .st-card,.an-card{min-width:0}
+.sx .panel,.sx .panel p,.sx .panel div{text-align:left}
+.sx .st-state{text-align:center}
 
 .st-back,.st-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-weight:800;font-size:14px;text-decoration:none;cursor:pointer;transition:background .2s,border-color .2s,transform .15s}
 .st-back{margin-bottom:18px;animation:st-rise .5s backwards}
@@ -83,8 +85,9 @@ const css = `
 
 .st-cathead{display:flex;align-items:center;gap:16px;margin:18px 0 22px;animation:st-rise .5s backwards}
 .st-cathead .st-catnum{margin:0;flex-shrink:0}
-.st-cathead h2{margin:0;font-size:clamp(22px,2.4vw,28px);font-weight:800;line-height:1.25}
-.st-cathead span.st-pill{margin-top:6px}
+.st-cathead>div{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;text-align:left}
+.st-cathead h2{margin:0;font-size:clamp(22px,2.4vw,28px);font-weight:800;line-height:1.25;text-align:left;overflow-wrap:anywhere}
+.st-cathead .st-pill{margin:0}
 
 .st-group{margin-bottom:30px}
 .st-ghead{display:flex;align-items:center;gap:12px;margin:0 0 14px;animation:st-rise .5s backwards}
@@ -100,11 +103,12 @@ const css = `
 .st-title{font-size:clamp(19px,2vw,22px);font-weight:800;line-height:1.35;margin:0;overflow-wrap:anywhere}
 .st-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .st-sec{padding:4px 12px;border-radius:999px;background:var(--tone-bg);color:var(--tone);font-weight:800;font-size:14px;white-space:nowrap}
-.st-desc{margin:0;max-width:75ch;font-size:clamp(16.5px,1.7vw,18px);line-height:1.75}
-.st-ex{display:flex;gap:12px;align-items:flex-start;margin-top:14px;padding:14px 16px;border-radius:16px;background:var(--tone-bg);border:1px solid color-mix(in srgb,var(--tone) 25%,transparent)}
-.st-ex>svg{flex-shrink:0;margin-top:3px;color:var(--tone)}
-.st-ex b{display:block;margin-bottom:4px;font-size:13px;font-weight:800;color:var(--tone)}
-.st-ex p{margin:0;font-size:clamp(16px,1.6vw,17.5px);line-height:1.7;font-weight:600;overflow-wrap:anywhere}
+.st-desc{margin:0;max-width:75ch;font-size:clamp(16.5px,1.7vw,18px);font-weight:500;line-height:1.75}
+.st-ex{margin-top:16px;padding:14px 16px;border-radius:16px;background:var(--tone-bg);border:1px solid color-mix(in srgb,var(--tone) 25%,transparent)}
+.st-ex-h{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:14px;font-weight:800;color:var(--tone)}
+.st-ex-chips{display:flex;flex-wrap:wrap;gap:8px}
+.st-chip{padding:6px 14px;border-radius:999px;background:#fff;color:#14263a;border:1px solid color-mix(in srgb,var(--tone) 30%,transparent);font-size:16px;font-weight:700;line-height:1.4;overflow-wrap:anywhere}
+.st-ex-text{margin:0;font-size:clamp(16px,1.6vw,17.5px);font-weight:600;line-height:1.7;overflow-wrap:anywhere}
 
 .st-save{width:38px;height:38px;border-radius:50%;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;cursor:pointer;display:grid;place-items:center;opacity:.75;transition:background .2s,border-color .2s,color .2s,transform .15s,opacity .2s}
 .st-save:hover{background:rgba(128,128,128,.12);opacity:1;transform:scale(1.08)}
@@ -124,7 +128,7 @@ const css = `
 @media (max-width:600px){.st-card{padding:14px 14px 14px 22px}.st-h1{font-size:28px}.an-card{padding:20px}}
 
 @media (prefers-reduced-motion:reduce){
-  .st *,.st *::before{animation:none!important;transition:none!important}
+  .sx *,.sx *::before{animation:none!important;transition:none!important}
 }
 `
 
@@ -136,6 +140,22 @@ function splitExample(text = '') {
     def: text.slice(0, m.index).trim(),
     example: text.slice(m.index + m[0].length).trim(),
   }
+}
+
+// "олон-олноос, авар-авраад." -> ['олон-олноос', 'авар-авраад']
+// Returns null when the example is a sentence (then it is shown as plain text)
+function exampleChips(text = '') {
+  const parts = text
+    .replace(/[.。]\s*$/, '')
+    .split(/\s*[,;]\s*/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+  if (
+    parts.length >= 2 &&
+    parts.every((p) => p.length <= 28 && p.split(/\s+/).length <= 2)
+  )
+    return parts
+  return null
 }
 
 function shuffle(arr) {
@@ -181,7 +201,7 @@ function buildRound(rows) {
         prompt: r[DESC_COL],
         answer,
         section: sectionOf(r[TYPE_COL]),
-        explanation: sectionOf(r[TYPE_COL]) ? `${sectionOf(r[TYPE_COL])} дүрэмд хамаарна.` : '',
+        explanation: `«${answer}» дүрэмд хамаарна.`,
         options: shuffle([answer, ...wrong]),
       }
     })
@@ -273,7 +293,7 @@ export default function GrammarPage() {
       question: q.prompt,
       userAnswer: option,
       correctAnswer: q.answer,
-      explanation: `Энэ тайлбар «${q.answer}» ${q.section} дүрэмд хамаарна. Та «${option}»-г сонгосон нь өөр дүрэм юм.`,
+      explanation: `Энэ тайлбар «${q.answer}» дүрэмд хамаарна. Та «${option}»-г сонгосон нь өөр дүрэм юм.`,
     })
   }
 
@@ -301,7 +321,7 @@ export default function GrammarPage() {
           user_id: userId,
           topic: TOPIC,
           item_id: itemId,
-          title: `${cleanTitle(r[TYPE_COL])} ${sectionOf(r[TYPE_COL])}`.trim(),
+          title: cleanTitle(r[TYPE_COL]),
           content: r[DESC_COL],
         })
 
@@ -320,8 +340,9 @@ export default function GrammarPage() {
     )
   })
 
-  // Big categories by main section number: 28, 29, 30 ...
+  // Big categories by main section number, numbered 1, 2, 3 ...
   const categories = []
+  const ruleNo = {} // rule id -> "1.1", "1.2" ...
   rows.forEach((r) => {
     const k = sortKey(r[TYPE_COL])
     const key = k === 9999 ? 'other' : String(Math.floor(k))
@@ -332,7 +353,11 @@ export default function GrammarPage() {
     }
     c.items.push(r)
   })
-  categories.forEach((c) => {
+  categories.forEach((c, ci) => {
+    c.no = ci + 1
+    c.items.forEach((r, i) => {
+      ruleNo[r.id] = `${ci + 1}.${i + 1}`
+    })
     const root =
       c.items.find((i) => !sectionOf(i[TYPE_COL]).includes('.')) || c.items[0]
     c.title = c.key === 'other' ? 'Бусад дүрэм' : cleanTitle(root[TYPE_COL])
@@ -348,14 +373,13 @@ export default function GrammarPage() {
   const renderRule = (r, idx) => {
     const isSaved = savedIds.has(`${TOPIC}-${r.id}`)
     const { def, example } = splitExample(r[DESC_COL])
+    const chips = example ? exampleChips(example) : null
     return (
       <div key={r.id} className="panel st-card" style={{ '--i': Math.min(idx, 8) }}>
         <div className="st-head">
           <p className="st-title">{cleanTitle(r[TYPE_COL])}</p>
           <div className="st-right">
-            {sectionOf(r[TYPE_COL]) && (
-              <span className="st-sec">{sectionOf(r[TYPE_COL])}</span>
-            )}
+            <span className="st-sec">{ruleNo[r.id]}</span>
             <button
               type="button"
               className={`st-save ${isSaved ? 'on' : ''}`}
@@ -373,11 +397,21 @@ export default function GrammarPage() {
 
         {example && (
           <div className="st-ex">
-            <Lightbulb size={20} aria-hidden />
-            <div>
-              <b>Жишээ</b>
-              <p>{example}</p>
+            <div className="st-ex-h">
+              <Lightbulb size={16} aria-hidden />
+              Жишээ
             </div>
+            {chips ? (
+              <div className="st-ex-chips">
+                {chips.map((c, i) => (
+                  <span key={i} className="st-chip">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="st-ex-text">{example}</p>
+            )}
           </div>
         )}
       </div>
@@ -388,7 +422,7 @@ export default function GrammarPage() {
     <AppShell userName="">
       <style>{css}</style>
 
-      <div className="st" id="st-top" style={{ scrollMarginTop: 12 }}>
+      <div className="sx" id="st-top" style={{ scrollMarginTop: 12 }}>
         <Link href="/myclass/lessons" className="st-back">
           <ArrowLeft className="st-arl" size={16} aria-hidden />
           Хичээлүүд рүү буцах
@@ -495,10 +529,10 @@ export default function GrammarPage() {
                     onClick={() => setCategory(c.key)}
                   >
                     <span className="st-ghost" aria-hidden>
-                      {c.key === 'other' ? '…' : c.key}
+                      {c.no}
                     </span>
                     <span className="st-catnum">
-                      {c.key === 'other' ? <Layers size={24} aria-hidden /> : c.key}
+                      {c.no}
                     </span>
                     <h3>{c.title}</h3>
                     {c.sub && <p className="st-cat-sub">{c.sub}</p>}
@@ -526,7 +560,7 @@ export default function GrammarPage() {
 
                 <div className="st-cathead">
                   <span className="st-catnum">
-                    {activeCat.key === 'other' ? <Layers size={24} aria-hidden /> : activeCat.key}
+                    {activeCat.no}
                   </span>
                   <div>
                     <h2>{activeCat.title}</h2>

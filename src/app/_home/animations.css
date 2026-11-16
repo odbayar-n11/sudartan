@@ -1,0 +1,51 @@
+/* Homepage motion. Elements opt in with data-reveal="up" | "left" | "right" | "stagger";
+   useScrollReveal() adds .is-in when they scroll into view. */
+
+@keyframes rv-up    { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+@keyframes rv-left  { from { opacity: 0; transform: translateX(-48px); } to { opacity: 1; transform: none; } }
+@keyframes rv-right { from { opacity: 0; transform: translateX(48px); } to { opacity: 1; transform: none; } }
+@keyframes rv-pop   { from { opacity: 0; transform: translateY(32px) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes cloud-drift { from { transform: translateX(-24px); } to { transform: translateX(24px); } }
+@keyframes answer-in   { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+:root { --ease-out: cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Hidden until revealed */
+[data-reveal]:not([data-reveal="stagger"]):not([data-reveal="words"]):not(.is-in),
+[data-reveal="stagger"]:not(.is-in) > * { opacity: 0; }
+
+.is-in[data-reveal="up"]    { animation: rv-up 0.9s var(--ease-out) both; }
+.is-in[data-reveal="left"]  { animation: rv-left 0.9s var(--ease-out) both; }
+.is-in[data-reveal="right"] { animation: rv-right 0.9s var(--ease-out) both; }
+.is-in[data-reveal="pop"]   { animation: rv-pop 0.8s var(--ease-out) both; }
+.is-in[data-reveal="stagger"] > * { animation: rv-pop 0.8s var(--ease-out) both; }
+.is-in[data-reveal="stagger"] > :nth-child(2) { animation-delay: 0.1s; }
+.is-in[data-reveal="stagger"] > :nth-child(3) { animation-delay: 0.2s; }
+.is-in[data-reveal="stagger"] > :nth-child(4) { animation-delay: 0.3s; }
+.is-in[data-reveal="stagger"] > :nth-child(5) { animation-delay: 0.4s; }
+.is-in[data-reveal="stagger"] > :nth-child(n+6) { animation-delay: 0.5s; }
+
+/* Headings: words light up one after another */
+[data-reveal="words"] .w {
+  display: inline-block;
+  opacity: 0.12;
+  transform: translateY(0.25em);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+  transition-delay: calc(var(--i) * 120ms);
+}
+.is-in[data-reveal="words"] .w { opacity: 1; transform: none; }
+
+/* Back cloud layer drifts gently everywhere */
+.clouds-back { animation: cloud-drift 9s ease-in-out infinite alternate; }
+
+.faq-answer { animation: answer-in 0.35s var(--ease-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal], [data-reveal] > *, .clouds-back, .faq-answer,
+  [data-reveal="words"] .w {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

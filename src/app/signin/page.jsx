@@ -23,6 +23,7 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [demoLoading, setDemoLoading] = useState(false)
   const router = useRouter()
 
   const handleSignIn = async (e) => {
@@ -42,6 +43,22 @@ export default function SignIn() {
     }
 
     setLoading(false)
+  }
+
+  // Demo login: signs the visitor in as a temporary guest (Supabase anonymous sign-in),
+  // so they can try the app without an account. Needs "Anonymous sign-ins" enabled in Supabase.
+  const handleDemo = async () => {
+    setDemoLoading(true)
+    setErrorMsg('')
+
+    const { error } = await supabase.auth.signInAnonymously()
+
+    if (error) {
+      setErrorMsg(error.message)
+      setDemoLoading(false)
+    } else {
+      router.push('/myclass')
+    }
   }
 
   return (
@@ -118,10 +135,25 @@ export default function SignIn() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || demoLoading}
             className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:bg-[#7dd3fc] text-white font-extrabold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 mt-2"
           >
             {loading ? 'Нэвтэрч байна...' : 'Нэвтрэх'}
+          </button>
+
+          <div className="flex items-center gap-3 text-xs font-semibold text-[#94a3b8]">
+            <span className="h-px flex-1 bg-[#e2e8f0]" />
+            эсвэл
+            <span className="h-px flex-1 bg-[#e2e8f0]" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleDemo}
+            disabled={demoLoading || loading}
+            className="w-full py-3.5 bg-white hover:bg-[#f0f9ff] disabled:opacity-60 text-[#0284c7] font-extrabold rounded-full border-2 border-[#bae6fd] hover:border-[#0284c7] transition-all duration-300"
+          >
+            {demoLoading ? 'Нэвтэрч байна...' : 'Демо хувилбараар туршиж үзэх'}
           </button>
 
           <p className="text-sm text-center text-[#64748b] pt-2">

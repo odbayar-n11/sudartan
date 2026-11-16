@@ -248,7 +248,8 @@ export default function DashboardPage() {
         ]);
 
       if (!alive) return;
-      setUserName(profile?.data?.username || user.email.split("@")[0]);
+      // Demo (guest) users have no email, so fall back to "Зочин" (Guest).
+      setUserName(profile?.data?.username || user.email?.split("@")[0] || "Зочин");
       setPlanData(plan);
       setMistakes(mistakeCount);
       setSaved(savedRows);

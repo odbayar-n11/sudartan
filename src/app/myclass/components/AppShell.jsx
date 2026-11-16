@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Manrope } from "next/font/google";
+import { Manrope, Nunito } from "next/font/google";
 import { PenLine, LogOut, ChevronUp } from "lucide-react";
 import { mainNav } from "../data/nav";
 import { supabase } from "../../../lib/supabase";
@@ -12,6 +12,12 @@ import "../dashboard/dashboard.css";
 const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
   weight: ["500", "600", "700", "800"],
+});
+
+// Same font as the homepage header logo
+const nunito = Nunito({
+  subsets: ["latin", "cyrillic"],
+  weight: ["800"],
 });
 
 function NavLink({ item }) {
@@ -66,7 +72,8 @@ export default function AppShell({ userName = "", children }) {
         .eq("id", u.id)
         .single();
 
-      setName(p?.username || u.email.split("@")[0]);
+      // Demo (guest) users have no email, so fall back to "Зочин" (Guest).
+      setName(p?.username || u.email?.split("@")[0] || "Зочин");
       setAvatar(p?.avatar_url || "");
     }
 
@@ -142,8 +149,8 @@ export default function AppShell({ userName = "", children }) {
       <aside className="sidebar">
         {/* Plain div instead of a link, so clicking it does nothing */}
         <div className="logo">
-          <img src="/images/logo.png" alt="" width="40" height="40" />
-          Судартан
+          <img src="/images/logo.png" alt="" width="32" height="32" />
+          <span className={nunito.className}>СУДАРТАН</span>
         </div>
 
         <nav aria-label="Үндсэн цэс">

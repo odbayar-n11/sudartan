@@ -65,7 +65,7 @@ async function readScore(supabase, userId) {
     .from("profiles")
     .select("score")
     .eq("id", userId)
-    .single();
+    .maybeSingle(); // demo (guest) users have no profile row: treat as score 0
   if (error) throw error;
   return data?.score ?? 0;
 }

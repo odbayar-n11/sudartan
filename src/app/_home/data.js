@@ -11,10 +11,10 @@ export const NAV_LINKS = [
 export const NAV_ORDER = [...NAV_LINKS].reverse();
 
 export const STATS = [
-  { value: "...", label: "Суралцагч" },
-  { value: "...", label: "Хичээл" },
-  { value: "...", label: "Туршлага" },
-  { value: "...", label: "Сэтгэл ханамж" },
+  { value: "400+", label: "Суралцагч" },
+  { value: "200+", label: "Хичээл" },
+  { value: "6", label: "Сэдэв" },
+  { value: "94%", label: "Сэтгэл ханамж" },
 ];
 
 export const OFFERS = [
@@ -64,9 +64,9 @@ export const FAQS = [
 export const FOUNDERS = [
   { name: "Н. Одбаяр", photo: "/images/founders/odbayar.jpg", photoPos: "50% 8%" },
   { name: "С. Төгөлдөр", photo: "/images/founders/tuguldur.jpg", photoPos: "50% 50%" },
-  { name: "С. Мичид", photo: "/images/founders/michid.jpg" },
-  { name: "У. Ундрам", photo: "/images/founders/undram.jpg" },
-  { name: "Л. Өсөх-Ирээдүй", photo: "/images/founders/usukh-ireedui.jpg", photoPos: "50% 30%" },
+  { name: "Ч. Мичид-Эрдэнэ", photo: "/images/founders/michid.jpg" },
+  { name: "Г. Ундрам", photo: "/images/founders/undram.jpg" },
+  { name: "Ч. Өсөх-Ирээдүй", photo: "/images/founders/usukh-ireedui.jpg", photoPos: "50% 30%" },
 ];
 
 export const AVATAR_BG = ["#38BDF8", "#0284C7", "#0ea5e9", "#7dd3fc", "#0369a1"];

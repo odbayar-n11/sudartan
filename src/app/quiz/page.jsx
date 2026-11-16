@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { saveMistake } from '@/lib/saveMistake'
-import AppShell from '../myclass/components/AppShell'
+import LessonScreen from '../myclass/components/LessonScreen'
 import DuoQuiz from '../myclass/components/DuoQuiz'
 
 const TOPIC = 'words'
@@ -25,27 +25,20 @@ function shuffle(arr) {
   return a
 }
 
-// For every word in the set: show the meaning, pick the correct spelling.
-// Wrong options: the common misspelling + correct spellings of other words.
-function buildQuestions(setRows, allRows) {
-  return shuffle(setRows).map((r) => {
-    const others = shuffle(
-      allRows.filter((x) => x.id !== r.id && x.correct_version !== r.correct_version)
-    )
-    const distractors = [
-      ...new Set([r.wrong_version, ...others.map((x) => x.correct_version)]),
-    ]
-      .filter((t) => t && t !== r.correct_version)
-      .slice(0, 3)
-
-    return {
+// For every word in the set: show the meaning and ask which spelling is correct.
+// Exactly two choices, straight from the database: correct_version vs wrong_version.
+function buildQuestions(setRows) {
+  return shuffle(setRows)
+    // skip rows where both spellings are missing or identical (nothing to choose between)
+    .filter((r) => r.correct_version && r.wrong_version && r.correct_version.trim() !== r.wrong_version.trim())
+    .map((r) => ({
       id: r.id,
-      prompt: r.meaning || 'Зөв бичгийг сонго',
+      type: 'sheep',
+      prompt: r.meaning || 'Аль нь зөв бичигдсэн бэ?',
       answer: r.correct_version,
       explanation: `«${r.wrong_version}» гэж бичих нь буруу.`,
-      options: shuffle([r.correct_version, ...distractors]),
-    }
-  })
+      options: shuffle([r.correct_version, r.wrong_version]),
+    }))
 }
 
 function QuizInner() {
@@ -77,7 +70,7 @@ function QuizInner() {
           setError(`Дасгал #${params.get('set')} олдсонгүй.`)
         } else {
           setAllRows(data)
-          setQuestions(buildQuestions(setRows, data))
+          setQuestions(buildQuestions(setRows))
         }
       }
       setLoading(false)
@@ -87,7 +80,7 @@ function QuizInner() {
 
   const restart = () => {
     const start = (setNumber - 1) * SET_SIZE
-    setQuestions(buildQuestions(allRows.slice(start, start + SET_SIZE), allRows))
+    setQuestions(buildQuestions(allRows.slice(start, start + SET_SIZE)))
     setRound((r) => r + 1)
   }
 
@@ -104,19 +97,8 @@ function QuizInner() {
   }
 
   return (
-    <AppShell userName="y/n">
+    <LessonScreen exitHref="/vg">
       <style>{css}</style>
-
-      <button type="button" className="back-btn" onClick={() => router.back()}>
-        ← Дасгалын багцууд руу буцах
-      </button>
-
-      <div className="top">
-        <div>
-          <h1>Дасгал #{setNumber}</h1>
-          <p className="lead">Утгад тохирох зөв бичгийг сонго</p>
-        </div>
-      </div>
 
       {error && (
         <div className="panel" style={{ color: '#ef4444', fontWeight: 700 }}>
@@ -134,7 +116,7 @@ function QuizInner() {
         <DuoQuiz
           key={round}
           questions={questions}
-          label="Утга:"
+          label="Энэ утгатай үгийн аль нь зөв бичигдсэн бэ?"
           promptSize={20}
           onAnswer={handleAnswer}
           onRestart={restart}
@@ -155,7 +137,7 @@ function QuizInner() {
           }
         />
       )}
-    </AppShell>
+    </LessonScreen>
   )
 }
 

@@ -63,10 +63,10 @@ export const FAQS = [
 // Optional `photoPos` moves the photo inside the circle (default "50% 20%"; smaller 2nd number = photo sits lower).
 export const FOUNDERS = [
   { name: "Н. Одбаяр", photo: "/images/founders/odbayar.jpg", photoPos: "50% 8%" },
-  { name: "С. Төгөлдөр" },
+  { name: "С. Төгөлдөр", photo: "/images/founders/tuguldur.jpg", photoPos: "50% 50%" },
   { name: "С. Мичид", photo: "/images/founders/michid.jpg" },
   { name: "У. Ундрам", photo: "/images/founders/undram.jpg" },
-  { name: "Л. Өсөх-Ирээдүй" },
+  { name: "Л. Өсөх-Ирээдүй", photo: "/images/founders/usukh-ireedui.jpg", photoPos: "50% 30%" },
 ];
 
 export const AVATAR_BG = ["#38BDF8", "#0284C7", "#0ea5e9", "#7dd3fc", "#0369a1"];

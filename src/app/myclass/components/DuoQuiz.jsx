@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Heart, Flame, Zap, Volume2, VolumeX } from 'lucide-react'
+import SheepChoice from './SheepChoice'
 
 const MAX_HEARTS = 5
 const CONFETTI_COLORS = ['#0284c7', '#22c55e', '#facc15', '#f97316', '#ec4899', '#a855f7']
@@ -333,7 +334,7 @@ export default function DuoQuiz({
         }
         return
       }
-      if (type !== 'choice' || answered) return
+      if ((type !== 'choice' && type !== 'sheep') || answered) return
       const n = Number(e.key)
       if (n >= 1 && n <= q.options.length) choose(q.options[n - 1])
     }
@@ -452,6 +453,16 @@ export default function DuoQuiz({
                   )
                 })}
               </div>
+            )}
+
+            {type === 'sheep' && (
+              <SheepChoice
+                options={q.options}
+                answer={q.answer}
+                picked={result?.given}
+                answered={answered}
+                onChoose={choose}
+              />
             )}
 
             {type === 'type' && (

@@ -14,6 +14,7 @@ import {
   CircleAlert,
   Bookmark,
   ArrowRight,
+  CalendarDays,
 } from "lucide-react";
 import AppShell from "../components/AppShell";
 import { supabase } from "../../../lib/supabase";
@@ -181,7 +182,7 @@ function CardHead({ Icon, title }) {
   return (
     <div className="db-card-head">
       <span className="db-icon">
-        <Icon size={18} aria-hidden />
+        <Icon size={20} aria-hidden />
       </span>
       <h3>{title}</h3>
     </div>
@@ -292,6 +293,13 @@ export default function DashboardPage() {
   const ratio = Math.min(Math.max(score / maxScore, 0), 1);
 
   const scoreShown = useCountUp(score, ready);
+  // Written out by hand: browsers don't all have Mongolian date names, and the server
+  // and browser must produce the same text.
+  const today = useMemo(() => {
+    const d = new Date();
+    const days = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"];
+    return `${d.getMonth() + 1}-р сарын ${d.getDate()}, ${days[d.getDay()]}`;
+  }, []);
   const mistakesShown = useCountUp(mistakes ?? 0, ready);
 
   return (
@@ -308,14 +316,21 @@ export default function DashboardPage() {
             </h1>
             <p className="db-lead">Өнөөдөр юу сурахаа сонгоцгооё</p>
           </div>
-          <div className="db-chip">
-            <Trophy size={18} aria-hidden /> {scoreShown}
+          <div className="db-top-right">
+            <div className="db-chip db-chip--date" suppressHydrationWarning>
+              <CalendarDays size={18} aria-hidden /> {today}
+            </div>
+            <div className="db-chip">
+              <Trophy size={18} aria-hidden /> {scoreShown}
+            </div>
           </div>
         </header>
 
         {/* Hero */}
         <div className="db-hero">
           <section className="db-card db-plan db-in" style={{ "--i": 1 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/logo.png" alt="" className="db-mascot" aria-hidden />
             {!ready ? (
               <Skeleton lines={4} />
             ) : plan && summary ? (
@@ -384,6 +399,12 @@ export default function DashboardPage() {
           <section className="db-card db-score db-in" style={{ "--i": 2 }}>
             <div className="db-ring" role="img" aria-label={`Оноо ${score} / ${maxScore}`}>
               <svg viewBox="0 0 120 120" aria-hidden>
+                <defs>
+                  <linearGradient id="db-ring-grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#38bdf8" />
+                    <stop offset="100%" stopColor="#0d4f9e" />
+                  </linearGradient>
+                </defs>
                 <circle className="db-ring-bg" cx="60" cy="60" r={RING_R} />
                 <circle
                   className="db-ring-fg"

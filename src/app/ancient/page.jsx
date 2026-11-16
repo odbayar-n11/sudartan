@@ -18,6 +18,7 @@ import { saveMistake } from '@/lib/saveMistake'
 import { buildMixedRound } from '@/lib/quizBuilders'
 import AppShell from '../myclass/components/AppShell'
 import DuoQuiz from '../myclass/components/DuoQuiz'
+import LessonScreen from '../myclass/components/LessonScreen'
 
 const TABLE = 'ancient_words'
 const WORD_COL = 'word'
@@ -159,6 +160,36 @@ export default function AncientPage() {
     setBest((b) => ({ ...b, [active]: Math.max(b[active] ?? 0, correct) }))
   }
 
+  // While a card is being played, show it as a full-screen lesson (no sidebar)
+  if (active !== null && questions.length > 0) {
+    return (
+      <LessonScreen onExit={backToCards}>
+        <style>{css}</style>
+        <DuoQuiz
+            key={round}
+            questions={questions}
+            label="Утгад тохирох үгийг сонго"
+            promptSize={20}
+            onAnswer={handleAnswer}
+            onFinish={handleFinish}
+            onRestart={() => start(active)}
+            actions={
+              <>
+                <Link href="/myclass/mistakes" className="st-btn">
+                  <CircleAlert size={16} aria-hidden />
+                  Алдсанаа харах
+                </Link>
+                <button onClick={backToCards} className="st-btn">
+                  <ArrowLeft size={16} aria-hidden />
+                  Картууд руу буцах
+                </button>
+              </>
+            }
+          />
+      </LessonScreen>
+    )
+  }
+
   return (
     <AppShell userName="y/n">
       <style>{css}</style>
@@ -166,9 +197,9 @@ export default function AncientPage() {
       <div className="sx">
         {/* Back button */}
         {active === null ? (
-          <Link href="/myclass/lessons" className="st-back">
+          <Link href="/myclass/exercises" className="st-back">
             <ArrowLeft className="st-arl" size={16} aria-hidden />
-            Хичээлүүд рүү буцах
+            Дасгал руу буцах
           </Link>
         ) : (
           <button onClick={backToCards} className="st-back">
@@ -267,30 +298,6 @@ export default function AncientPage() {
           </>
         )}
 
-        {/* ---------- Quiz (Duolingo style, mixed question types) ---------- */}
-        {active !== null && questions.length > 0 && (
-          <DuoQuiz
-            key={round}
-            questions={questions}
-            label="Утга:"
-            promptSize={20}
-            onAnswer={handleAnswer}
-            onFinish={handleFinish}
-            onRestart={() => start(active)}
-            actions={
-              <>
-                <Link href="/myclass/mistakes" className="st-btn">
-                  <CircleAlert size={16} aria-hidden />
-                  Алдсанаа харах
-                </Link>
-                <button onClick={backToCards} className="st-btn">
-                  <ArrowLeft size={16} aria-hidden />
-                  Картууд руу буцах
-                </button>
-              </>
-            }
-          />
-        )}
       </div>
     </AppShell>
   )

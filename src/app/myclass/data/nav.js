@@ -10,13 +10,17 @@ import {
   PenTool,
   ScrollText,
   BookOpen,
+  PencilRuler,
 } from "lucide-react";
 
-const topicPaths = ["/ancient", "/grammar", "/vg", "/quiz", "/idioms", "/script", "/uran-durslel"];
+// Topic pages that keep their sidebar item highlighted
+const lessonPaths = ["/grammar", "/script", "/uran-durslel", "/quiz"];
+const exercisePaths = ["/vg", "/idioms", "/ancient"];
 
 export const mainNav = [
   { label: "Нүүр", icon: Home, href: "/myclass/dashboard" },
-  { label: "Дасгалууд", icon: GraduationCap, href: "/myclass/lessons", also: topicPaths },
+  { label: "Хичээл", icon: GraduationCap, href: "/myclass/lessons", also: lessonPaths },
+  { label: "Дасгал", icon: PencilRuler, href: "/myclass/exercises", also: exercisePaths },
   { label: "Төлөвлөгөө", icon: CalendarDays, href: "/myclass/plan" },
   { label: "Алдсан", icon: AlertCircle, href: "/myclass/mistakes" },
   { label: "Хадгалсан", icon: Bookmark, href: "/myclass/saved" },

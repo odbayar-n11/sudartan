@@ -44,7 +44,7 @@ export default function Hero({ children }) {
             <div className="pt-6 w-full sm:w-auto flex items-center gap-5">
               <button
                 className="w-full sm:w-auto px-7 py-3.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-base font-extrabold rounded-full shadow-2xl sm:hover:scale-105 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0284c7]"
-                onClick={() => router.push("/options")}
+                onClick={() => router.push("/test")}
               >
                 Туршилтын дасгал
               </button>

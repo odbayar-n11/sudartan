@@ -453,3 +453,135 @@
     transition: none;
   }
 }
+
+/* =====================================================================
+   Design refresh: richer cards, mascot on the plan card, date pill
+   ===================================================================== */
+
+.db-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.db-chip--date {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--db-muted);
+}
+.db-chip--date svg { color: var(--db-accent); }
+.db-chip:not(.db-chip--date) {
+  background: linear-gradient(135deg, #fff8e1, #ffffff);
+  border-color: rgba(224, 161, 0, 0.25);
+}
+
+/* Cards: clip the corner icon, soft tinted top, accent strip */
+.db-card { overflow: hidden; border-radius: 24px; }
+.db-grid .db-card {
+  background: linear-gradient(180deg, var(--tone-bg, #f3f8fd) 0%, #ffffff 58%);
+  border-color: color-mix(in srgb, var(--tone, #1677d2) 14%, transparent);
+}
+.db-grid .db-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--tone), color-mix(in srgb, var(--tone) 35%, #ffffff));
+}
+.db-grid .db-card:hover {
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--tone, #1677d2) 22%, transparent);
+}
+.db-card > *:not(.db-mascot) { position: relative; }
+
+
+.db-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone, #1677d2) 18%, transparent);
+}
+.db-card-head h3 { letter-spacing: 0.01em; }
+
+.db-word { font-size: clamp(1.25rem, 1.7vw, 1.6rem); color: var(--db-ink); }
+
+/* Links become soft pills in the card's colour */
+.db-grid .db-link {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 12%, #ffffff);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.db-grid .db-link:hover { background: var(--tone); color: #fff; }
+
+/* Plan card: decorative circles + floating mascot */
+.db-plan {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(255, 255, 255, 0.25), transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(56, 189, 248, 0.45), transparent 50%),
+    linear-gradient(135deg, #1e88e5 0%, #0d4f9e 100%);
+  box-shadow: 0 18px 40px rgba(13, 79, 158, 0.35);
+}
+.db-plan::before,
+.db-plan::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+}
+.db-plan::before { width: 260px; height: 260px; right: -70px; top: -90px; }
+.db-plan::after { width: 160px; height: 160px; right: 60px; bottom: -80px; border-color: rgba(255, 255, 255, 0.1); }
+.db-plan > *:not(.db-mascot) { position: relative; z-index: 1; max-width: calc(100% - clamp(120px, 15vw, 200px)); }
+.db-plan .db-plan-foot { max-width: none; }
+.db-plan .db-bar, .db-plan .db-row { max-width: calc(100% - clamp(120px, 15vw, 200px)); }
+
+.db-mascot {
+  position: absolute;
+  right: clamp(12px, 2vw, 28px);
+  bottom: clamp(10px, 2vw, 22px);
+  width: clamp(110px, 13vw, 180px);
+  height: auto;
+  z-index: 1;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.25));
+  animation: db-float 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes db-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+/* Score card: soft blue glow behind a thicker gradient ring */
+.db-score {
+  background:
+    radial-gradient(circle at 50% 40%, #e8f4fe 0%, #ffffff 62%);
+}
+.db-ring { width: min(100%, 175px, 25vh); }
+.db-ring circle { stroke-width: 12; }
+.db-ring-fg { stroke: url(#db-ring-grad); filter: drop-shadow(0 4px 8px rgba(22, 119, 210, 0.3)); }
+.db-score .db-link {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #e8f4fe;
+}
+.db-score .db-link:hover { background: var(--db-accent); color: #fff; }
+
+@media (max-width: 720px) {
+  .db-mascot { width: 92px; opacity: 0.9; }
+  .db-plan > *:not(.db-mascot), .db-plan .db-bar, .db-plan .db-row { max-width: calc(100% - 96px); }
+  .db-plan .db-plan-foot { max-width: none; }
+  .db-top-right { justify-content: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .db-mascot { animation: none; }
+}
+
+/* Bottom cards only as tall as their content; the plan/score row takes the remaining space */
+.db-root { grid-template-rows: auto minmax(0, 1fr) auto; }
+.db-grid .db-card { min-height: 190px; }
+@media (max-width: 1100px) {
+  .db-root { grid-template-rows: auto auto auto; }
+}

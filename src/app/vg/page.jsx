@@ -104,9 +104,9 @@ export default function QuizSetsPage() {
       <style>{css}</style>
 
       <div className="sx">
-        <Link href="/myclass/lessons" className="st-back">
+        <Link href="/myclass/exercises" className="st-back">
           <ArrowLeft className="st-arl" size={16} aria-hidden />
-          Хичээлүүд рүү буцах
+          Дасгал руу буцах
         </Link>
 
         {/* Header Banner */}

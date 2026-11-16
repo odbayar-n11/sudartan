@@ -1,8 +1,15 @@
 import { OFFERS } from "../data";
 import { H2, SECTION_OFFSET } from "../styles";
 import Clouds, { CLOUD_H } from "./Clouds";
-import SheepHead from "./SheepHead";
 import Words from "./Words";
+
+// One sheep picture per service (public/images/sheep/)
+const SHEEP_ICONS = {
+  pencil: "/images/sheep/icon-green.jpg",
+  book: "/images/sheep/icon-teal.jpg",
+  quill: "/images/sheep/icon-pink.jpg",
+  bubble: "/images/sheep/icon-mint.jpg",
+};
 
 export default function Offer() {
   return (
@@ -23,11 +30,14 @@ export default function Offer() {
           {OFFERS.map((offer) => (
             <div
               key={offer.title}
-              className="rounded-[24px] sm:rounded-[30px] bg-[#ffffff] backdrop-blur-md border border-white/20 p-5 sm:p-6 hover:border-white/60 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 flex sm:block gap-4 items-start"
+              className="group rounded-[24px] sm:rounded-[30px] bg-[#ffffff] backdrop-blur-md border border-white/20 p-5 sm:p-6 hover:border-white/60 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 flex sm:block gap-4 items-start"
             >
-              <span className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-full bg-[#01993e] flex items-center justify-center sm:mb-5 shadow-inner">
-                <SheepHead acc={offer.icon} className="w-10 h-10 sm:w-12 sm:h-12"/>
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={SHEEP_ICONS[offer.icon]}
+                alt=""
+                className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-full object-cover bg-[#ecebea] ring-4 ring-[#e0f2fe] sm:mb-5 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105"
+              />
               <div>
                 <h3 className="font-extrabold text-[#0a5600] text-lg sm:text-xl mb-1 sm:mb-2 font-[family-name:var(--font-display)]">
                   {offer.title}

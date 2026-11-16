@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { saveMistake } from '@/lib/saveMistake'
-import AppShell from '../myclass/components/AppShell'
+import LessonScreen from '../myclass/components/LessonScreen'
 import DuoQuiz from '../myclass/components/DuoQuiz'
 
 const TABLE = 'mongolian_idioms'
@@ -96,19 +96,8 @@ export default function IdiomsGame() {
   }
 
   return (
-    <AppShell userName="y/n">
+    <LessonScreen exitHref="/myclass/exercises">
       <style>{css}</style>
-
-      <Link href="/myclass/lessons" className="back-btn">
-        ← Хичээлүүд рүү буцах
-      </Link>
-
-      <div className="top">
-        <div>
-          <h1>Хэлц үг</h1>
-          <p className="lead">Тайлбарт тохирох хэлц үгийг сонго</p>
-        </div>
-      </div>
 
       {error && (
         <div className="panel" style={{ color: '#ef4444', fontWeight: 700 }}>
@@ -128,7 +117,7 @@ export default function IdiomsGame() {
         <DuoQuiz
           key={round}
           questions={questions}
-          label="Утга:"
+          label="Тайлбарт тохирох хэлц үгийг сонго"
           promptSize={20}
           onAnswer={handleAnswer}
           onRestart={restart}
@@ -137,13 +126,13 @@ export default function IdiomsGame() {
               <Link href="/myclass/mistakes" className="back-btn" style={{ marginBottom: 0 }}>
                 Алдсанаа харах
               </Link>
-              <Link href="/myclass/lessons" className="back-btn" style={{ marginBottom: 0 }}>
-                Хичээлүүд рүү буцах
+              <Link href="/myclass/exercises" className="back-btn" style={{ marginBottom: 0 }}>
+                Дасгал руу буцах
               </Link>
             </>
           }
         />
       )}
-    </AppShell>
+    </LessonScreen>
   )
 }

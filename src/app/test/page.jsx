@@ -1,394 +1,87 @@
 'use client';
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import LessonScreen from '../myclass/components/LessonScreen';
+import DuoQuiz from '../myclass/components/DuoQuiz';
 
-const TIME_PER_QUESTION = 10; // seconds
-const ADVANCE_DELAY = 1300; // ms to show feedback before moving on
+// Trial Журамласан үг exercise (from the homepage "Туршилтын дасгал" button).
+// Same full-screen, two-sheep format as the real lesson; no login needed, nothing is saved.
 
-const QUESTION_SETS = {
-  vocab: {
-    intro: {
-      title: 'Дараах үгсээс зөв бичигдсэн үгийг сонгоорой!',
-      subtitle: 'Асуулт бүрт 10 секунд өгөгднө.',
-    },
-    questions: [
-      {
-        id: 1,
-        prompt: 'Утга: Төрөлхөөс өгөгдсөн чадвар',
-        options: [
-          { id: 'А', text: 'Авъяас' },
-          { id: 'Б', text: 'Авьяас' },
-        ],
-        correctIndex: 0,
-      },
-      {
-        id: 2,
-        prompt: 'Утга: 7 дахь',
-        options: [
-          { id: 'А', text: 'Долдугаар' },
-          { id: 'Б', text: 'Долоодугаар' },
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: 3,
-        prompt: 'Утга: Их хэмжээний, том',
-        options: [
-          { id: 'А', text: 'Аварга' },
-          { id: 'Б', text: 'Аврага' },
-        ],
-        correctIndex: 0,
-      },
-      {
-        id: 4,
-        prompt: 'Утга: Олон давхарга бүхий хүнсний ногоо',
-        options: [
-          { id: 'А', text: 'Байцаа' },
-          { id: 'Б', text: 'Байцай' },
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: 5,
-        prompt: 'Утга: 8 хөлт далайн амьтан',
-        options: [
-          { id: 'А', text: 'Наймаалж' },
-          { id: 'Б', text: 'Наймалж' },
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: 6,
-        prompt: 'Утга: Хальт хөндөн ярих',
-        options: [
-          { id: 'А', text: 'Дурдах' },
-          { id: 'Б', text: 'Дурьдах' },
-        ],
-        correctIndex: 0,
-      },
-      {
-        id: 7,
-        prompt: 'Утга: Өнгөрснийг дурсан санах бодол',
-        options: [
-          { id: 'А', text: 'Дурдатгал' },
-          { id: 'Б', text: 'Дуртгал' },
-        ],
-        correctIndex: 1,
-      },
-      {
-        id: 8,
-        prompt: 'Утга: Зөвлөгөө',
-        options: [
-          { id: 'А', text: 'Зааварчилгаа' },
-          { id: 'Б', text: 'Зааварчлагаа' },
-        ],
-        correctIndex: 0,
-      },
-      {
-        id: 9,
-        prompt: 'Утга: Уртлаг дугуй хэлбэр дүрс',
-        options: [
-          { id: 'А', text: 'Зууван' },
-          { id: 'Б', text: 'Зуйван' },
-        ],
-        correctIndex: 0,
-      },
-      {
-        id: 10,
-        prompt: 'Утга: Буддын шашны уншлагын ном',
-        options: [
-          { id: 'А', text: 'Маани' },
-          { id: 'Б', text: 'Маань' },
-        ],
-        correctIndex: 0,
-      },
-    ],
-  },
-};
+// meaning → [correct spelling, wrong spelling]
+const WORDS = [
+  { id: 1, meaning: 'Төрөлхөөс өгөгдсөн чадвар', correct: 'Авьяас', wrong: 'Авъяас' },
+  { id: 2, meaning: '7 дахь', correct: 'Долоодугаар', wrong: 'Долдугаар' },
+  { id: 3, meaning: 'Их хэмжээний, том', correct: 'Аварга', wrong: 'Аврага' },
+  { id: 4, meaning: 'Олон давхарга бүхий хүнсний ногоо', correct: 'Байцай', wrong: 'Байцаа' },
+  { id: 5, meaning: '8 хөлт далайн амьтан', correct: 'Наймалж', wrong: 'Наймаалж' },
+  { id: 6, meaning: 'Хальт хөндөн ярих', correct: 'Дурдах', wrong: 'Дурьдах' },
+  { id: 7, meaning: 'Өнгөрснийг дурсан санах бодол', correct: 'Дуртгал', wrong: 'Дурдатгал' },
+  { id: 8, meaning: 'Зөвлөгөө', correct: 'Зааварчилгаа', wrong: 'Зааварчлагаа' },
+  { id: 9, meaning: 'Уртлаг дугуй хэлбэр дүрс', correct: 'Зууван', wrong: 'Зуйван' },
+  { id: 10, meaning: 'Буддын шашны уншлагын ном', correct: 'Маани', wrong: 'Маань' },
+];
 
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 text-slate-800 font-serif">
-      <div className="relative w-12 h-12">
-        <div className="absolute inset-0 rounded-full border-2 border-slate-300" />
-        <div className="absolute inset-0 rounded-full border-2 border-slate-700 border-t-transparent animate-spin" />
-      </div>
-      <p className="text-slate-600 text-sm font-medium tracking-wide">Ачаалж байна…</p>
-    </div>
-  );
+const css = `
+.tr-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:999px;border:2px solid rgba(128,128,128,.3);background:transparent;color:inherit;font-weight:800;font-size:14px;text-decoration:none}
+.tr-btn:hover{background:rgba(128,128,128,.12)}
+.tr-btn.primary{background:#0284c7;border-color:#0284c7;color:#fff}
+.tr-btn.primary:hover{background:#0369a1}
+`;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
-function QuizInner() {
-  const searchParams = useSearchParams();
-  const requestedType = searchParams.get('type');
-  const set = QUESTION_SETS[requestedType] ?? QUESTION_SETS.vocab;
+// First load uses a fixed order that still varies per word (server and browser must render
+// the same thing); "play again" reshuffles for real.
+const fixedOrder = (w) => (w.meaning.length % 2 ? [w.correct, w.wrong] : [w.wrong, w.correct]);
 
-  const [stage, setStage] = useState('intro'); // 'intro' | 'quiz' | 'finished'
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
-  const advanceTimeout = useRef(null);
+function buildQuestions(random = false) {
+  return WORDS.map((w) => ({
+    id: w.id,
+    type: 'sheep',
+    prompt: w.meaning,
+    answer: w.correct,
+    explanation: `«${w.wrong}» гэж бичих нь буруу.`,
+    options: random ? shuffle([w.correct, w.wrong]) : fixedOrder(w),
+  }));
+}
 
-  const currentQuestion = set.questions[currentIdx];
-  const isAnswered = selectedOption !== null || timeLeft === 0;
+export default function TrialVocabPage() {
+  const [questions, setQuestions] = useState(() => buildQuestions());
+  const [round, setRound] = useState(0);
 
-  // Countdown for the active question.
-  useEffect(() => {
-    if (stage !== 'quiz' || isAnswered) return undefined;
-    if (timeLeft === 0) return undefined;
-
-    const tick = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearTimeout(tick);
-  }, [stage, timeLeft, isAnswered]);
-
-  // Once answered (by pick or timeout), auto-advance.
-  useEffect(() => {
-    if (stage !== 'quiz' || !isAnswered) return undefined;
-
-    advanceTimeout.current = setTimeout(() => {
-      goToNext();
-    }, ADVANCE_DELAY);
-
-    return () => clearTimeout(advanceTimeout.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAnswered, stage]);
-
-  const goToNext = () => {
-    if (currentIdx + 1 < set.questions.length) {
-      setCurrentIdx((i) => i + 1);
-      setSelectedOption(null);
-      setTimeLeft(TIME_PER_QUESTION);
-    } else {
-      setStage('finished');
-    }
+  const restart = () => {
+    setQuestions(buildQuestions(true));
+    setRound((r) => r + 1);
   };
 
-  const handleSkip = () => {
-    if (isAnswered) return;
-    setTimeLeft(0);
-  };
-
-  const handleSelect = (index) => {
-    if (isAnswered) return;
-    setSelectedOption(index);
-    if (index === currentQuestion.correctIndex) {
-      setScore((s) => s + 100);
-    }
-  };
-
-  // ---------- Intro ----------
-  if (stage === 'intro') {
-    return (
-      <div className="min-h-screen bg-white text-slate-900 font-serif flex flex-col items-center justify-center px-6 relative overflow-hidden">
-        <div className="absolute top-1/4 -left-32 w-80 h-80 bg-slate-200/60 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-slate-300/60 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="max-w-xl w-full bg-slate-50 border border-slate-300 p-8 md:p-12 rounded-3xl shadow-xl text-center flex flex-col items-center z-10">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4 text-slate-800">
-            {set.intro.title}
-          </h1>
-          <p className="text-slate-600 text-sm md:text-base max-w-md mb-8 leading-relaxed">
-            {set.intro.subtitle}
-          </p>
-
-          <button
-            onClick={() => setStage('quiz')}
-            className="w-full sm:w-auto px-10 py-4 bg-slate-700 hover:bg-slate-800 active:scale-[0.98] text-white font-semibold rounded-2xl shadow-md transition-all duration-200 cursor-pointer"
-          >
-            Эхлэх
-          </button>
-
-          <Link
-            href="/"
-            className="mt-6 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
-          >
-            ← Буцах
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // ---------- Finished ----------
-  if (stage === 'finished') {
-    const maxScore = set.questions.length * 100;
-    const percentage = Math.round((score / maxScore) * 100);
-
-    return (
-      <div className="min-h-screen bg-white text-slate-900 font-serif flex flex-col items-center justify-center px-6 relative overflow-hidden">
-        <div className="max-w-md w-full bg-slate-50 border border-slate-300 p-8 md:p-10 rounded-3xl shadow-xl text-center flex flex-col items-center z-10">
-          <h2 className="text-3xl font-bold text-slate-800 mb-2">Дасгал дууслаа!</h2>
-
-          <div className="w-full bg-white border border-slate-300 rounded-2xl p-6 mb-8 flex flex-col items-center justify-center shadow-sm">
-            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">
-              Нийт оноо
-            </span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black text-slate-800">
-                {score}
-              </span>
-              <span className="text-slate-500 text-sm font-semibold">/ {maxScore}</span>
-            </div>
-            <span className="mt-3 text-xs font-medium px-3 py-1 rounded-full bg-slate-200 text-slate-700 border border-slate-300">
-              Гүйцэтгэл: {percentage}%
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full"> 
-            <Link href="/" className="w-full">
-              <button className="w-full py-3.5 border border-slate-300 hover:bg-slate-200/50 active:scale-[0.98] rounded-xl font-semibold transition-all cursor-pointer text-sm text-slate-700">
-                Нүүр хуудас
-              </button>
+  return (
+    <LessonScreen exitHref="/">
+      <style>{css}</style>
+      <DuoQuiz
+        key={round}
+        questions={questions}
+        label="Энэ утгатай үгийн аль нь зөв бичигдсэн бэ?"
+        promptSize={20}
+        onRestart={restart}
+        actions={
+          <>
+            <Link href="/signup" className="tr-btn primary">
+              Бүртгүүлэх
             </Link>
-            <button className="w-full py-3.5 bg-slate-700 hover:bg-slate-800 active:scale-[0.98] text-white rounded-xl font-semibold shadow-md transition-all cursor-pointer text-sm">
-              Бусад дасгалууд
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ---------- Quiz ----------
-  const timerRatio = timeLeft / TIME_PER_QUESTION;
-  const timerColorClass =
-    timerRatio > 0.6
-      ? 'bg-emerald-600'
-      : timerRatio > 0.3
-      ? 'bg-amber-600'
-      : 'bg-rose-600';
-
-  return (
-    <div className="min-h-screen bg-white text-slate-900 font-serif flex flex-col justify-between relative overflow-hidden">
-      {/* Header Navigation & Progress Bar */}
-      <header className="px-6 pt-6 max-w-2xl w-full mx-auto relative z-10">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <Link
-            href="/"
-            className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:border-slate-400 transition-all shadow-sm"
-            aria-label="Close"
-          >
-            ✕
-          </Link>
-
-          <span className="text-xs font-medium tracking-wider text-slate-600 bg-slate-100 px-3.5 py-1.5 rounded-full border border-slate-300">
-            {currentIdx + 1} / {set.questions.length}
-          </span>
-
-          {/* Skip Button on the Top Right Edge */}
-          <button
-            onClick={handleSkip}
-            disabled={isAnswered}
-            className="h-9 px-4 text-xs font-semibold rounded-xl bg-slate-100 border border-slate-300 text-slate-700 hover:bg-slate-200 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
-          >
-            Алгасах
-          </button>
-        </div>
-
-        {/* Shrinking Line Timer located directly beneath the header */}
-        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-          <div
-            className={`h-full ${timerColorClass} transition-all duration-1000 ease-linear`}
-            style={{ width: `${timerRatio * 100}%` }}
-          />
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-6 max-w-2xl w-full mx-auto relative z-10">
-        <div className="w-full bg-slate-50 border border-slate-300 p-6 md:p-10 rounded-3xl shadow-xl transition-all">
-          {currentQuestion.prompt && (
-            <div className="mb-8 text-center">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">
-                Утга:
-              </span>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-800 leading-snug">
-                {currentQuestion.prompt.replace(/^Утга:\s*/, '')}
-              </h1>
-            </div>
-          )}
-
-          {/* Answer Options */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {currentQuestion.options.map((opt, i) => {
-              const isSelected = selectedOption === i;
-              const isCorrectOpt = i === currentQuestion.correctIndex;
-
-              let style =
-                'bg-white border-slate-300 hover:border-slate-500 hover:bg-slate-100/50 text-slate-800';
-              let badgeStyle = 'bg-slate-200 text-slate-700 border-slate-300';
-
-              if (isAnswered) {
-                if (isCorrectOpt) {
-                  style =
-                    'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm';
-                  badgeStyle = 'bg-emerald-600 text-white border-emerald-600 font-bold';
-                } else if (isSelected) {
-                  style =
-                    'bg-rose-50 border-rose-500 text-rose-900 shadow-sm';
-                  badgeStyle = 'bg-rose-600 text-white border-rose-600 font-bold';
-                } else {
-                  style = 'bg-slate-100 border-slate-200 text-slate-400 opacity-50';
-                  badgeStyle = 'bg-slate-200 text-slate-400 border-slate-200';
-                }
-              }
-
-              return (
-                <button
-                  key={opt.id}
-                  onClick={() => handleSelect(i)}
-                  disabled={isAnswered}
-                  className={`p-5 rounded-2xl border text-left flex items-center gap-4 min-h-[76px] transition-all duration-200 transform active:scale-[0.99] cursor-pointer ${style}`}
-                >
-                  <span
-                    className={`w-9 h-9 shrink-0 rounded-xl border flex items-center justify-center text-xs font-semibold transition-all ${badgeStyle}`}
-                  >
-                    {opt.id}
-                  </span>
-                  <span className="text-base font-medium leading-snug">{opt.text}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Feedback Section */}
-          <div className="min-h-[28px] mt-6 flex items-center justify-center">
-            {isAnswered && (
-              <p
-                className={`text-center text-xs font-semibold tracking-wide transition-all ${
-                  selectedOption === null
-                    ? 'text-amber-700'
-                    : selectedOption === currentQuestion.correctIndex
-                    ? 'text-emerald-700'
-                    : 'text-rose-700'
-                }`}
-              >
-                {selectedOption === null
-                  ? `⏱ Хариулт хоосон! Зөв хариулт: ${currentQuestion.options[currentQuestion.correctIndex].text}`
-                  : selectedOption === currentQuestion.correctIndex
-                  ? '✓ Зөв хариуллаа!'
-                  : `✕ Зөв хариулт: ${currentQuestion.options[currentQuestion.correctIndex].text}`}
-              </p>
-            )}
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-4 text-center text-xs text-slate-500 font-medium">
-        Зөв бичих дүрэм
-      </footer>
-    </div>
-  );
-}
-
-export default function QuizPage() {
-  return (
-    <Suspense fallback={<LoadingScreen />}>
-      <QuizInner />
-    </Suspense>
+            <Link href="/" className="tr-btn">
+              ← Буцах
+            </Link>
+          </>
+        }
+      />
+    </LessonScreen>
   );
 }

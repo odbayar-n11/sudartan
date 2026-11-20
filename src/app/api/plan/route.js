@@ -10,7 +10,6 @@ const MODEL = "claude-sonnet-5-5"; // cheaper and faster: "claude-haiku-5-5"
 const MAX_SCORE = 800; // the highest possible score in your app
 const COOLDOWN_MINUTES = 10; // how often one user may generate a new plan
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
 const TYPES = ["ancient", "grammar", "idioms", "script", "literary", "quiz"];
 

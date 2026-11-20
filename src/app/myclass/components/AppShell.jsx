@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Manrope, Nunito } from "next/font/google";
-import { PenLine, LogOut, ChevronUp } from "lucide-react";
+import { PenLine, LogOut, ChevronUp, MoreHorizontal } from "lucide-react";
 import { mainNav } from "../data/nav";
 import { supabase } from "../../../lib/supabase";
 import "../dashboard/dashboard.css";
+import "./mobile-nav.css"; // must stay AFTER dashboard.css
 
 const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
@@ -20,11 +21,21 @@ const nunito = Nunito({
   weight: ["800"],
 });
 
+// Phone tab bar: first 4 items are tabs, the rest go under "Бусад" (More)
+const TAB_COUNT = 4;
+const primaryNav = mainNav.slice(0, TAB_COUNT);
+const moreNav = mainNav.slice(TAB_COUNT);
+
+function isActive(item, pathname) {
+  return (
+    pathname === item.href ||
+    (item.also && item.also.some((p) => pathname.startsWith(p)))
+  );
+}
+
 function NavLink({ item }) {
   const pathname = usePathname();
-  const active =
-    pathname === item.href ||
-    (item.also && item.also.some((p) => pathname.startsWith(p)));
+  const active = isActive(item, pathname);
   const Icon = item.icon;
 
   return (
@@ -43,13 +54,17 @@ function NavLink({ item }) {
 
 export default function AppShell({ userName = "", children }) {
   const router = useRouter();
+  const pathname = usePathname();
 
-  // user menu
+  // user menu (desktop sidebar)
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState("");
   const menuRef = useRef(null);
+
+  // "More" sheet (phone tab bar)
+  const [moreOpen, setMoreOpen] = useState(false);
 
   // logout confirm dialog
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -101,8 +116,23 @@ export default function AppShell({ userName = "", children }) {
     };
   }, [menuOpen]);
 
+  // Close the "More" sheet when the page changes or on Escape
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setMoreOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [moreOpen]);
+
   function openConfirm() {
     setMenuOpen(false);
+    setMoreOpen(false);
     setError("");
     setConfirmOpen(true);
   }
@@ -143,6 +173,10 @@ export default function AppShell({ userName = "", children }) {
       setLoading(false);
     }
   }
+
+  const moreActive =
+    moreNav.some((i) => isActive(i, pathname)) ||
+    pathname.startsWith("/myclass/profile");
 
   return (
     <div className={`app ${manrope.className}`}>
@@ -228,6 +262,98 @@ export default function AppShell({ userName = "", children }) {
       <main>
         <div className="wrap">{children}</div>
       </main>
+
+      {/* ---------- Phone: "More" sheet + bottom tab bar ---------- */}
+      {moreOpen && (
+        <>
+          <div className="tab-overlay" onClick={() => setMoreOpen(false)} />
+          <div className="tab-sheet" role="menu">
+            <div className="tab-sheet-user">
+              <i aria-hidden>
+                {avatar && <img src={avatar} alt="" />}
+              </i>
+              <div>
+                <strong>{name || userName || "Зочин"}</strong>
+                {email && <small>{email}</small>}
+              </div>
+            </div>
+
+            {moreNav.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href || index}
+                  href={item.href || "/"}
+                  className="um-item"
+                  role="menuitem"
+                  onClick={() => setMoreOpen(false)}
+                >
+                  <span className="ic" aria-hidden>
+                    <Icon size={18} />
+                  </span>
+                  {item.label}
+                </Link>
+              );
+            })}
+
+            <Link
+              href="/myclass/profile"
+              className="um-item"
+              role="menuitem"
+              onClick={() => setMoreOpen(false)}
+            >
+              <span className="ic" aria-hidden>
+                <PenLine size={18} />
+              </span>
+              Профайл засах
+            </Link>
+
+            <div className="um-sep" />
+
+            <button
+              type="button"
+              className="um-item danger"
+              role="menuitem"
+              onClick={openConfirm}
+            >
+              <span className="ic" aria-hidden>
+                <LogOut size={18} />
+              </span>
+              Гарах
+            </button>
+          </div>
+        </>
+      )}
+
+      <nav className="tabbar" aria-label="Гар утасны цэс">
+        {primaryNav.map((item, index) => {
+          const Icon = item.icon;
+          const active = isActive(item, pathname);
+          return (
+            <Link
+              key={item.href || index}
+              href={item.href || "/"}
+              className={active ? "tab on" : "tab"}
+              aria-current={active ? "page" : undefined}
+              onClick={() => setMoreOpen(false)}
+            >
+              <Icon size={22} strokeWidth={2.2} aria-hidden />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+
+        <button
+          type="button"
+          className={moreActive || moreOpen ? "tab on" : "tab"}
+          aria-haspopup="menu"
+          aria-expanded={moreOpen}
+          onClick={() => setMoreOpen((o) => !o)}
+        >
+          <MoreHorizontal size={22} strokeWidth={2.2} aria-hidden />
+          <span>Бусад</span>
+        </button>
+      </nav>
 
       {confirmOpen && (
         <div className="modal-overlay" onClick={closeConfirm}>

@@ -16,6 +16,14 @@ export const metadata = {
   description: "Хэл бичгийн элсэлтийн шалгалтад бэлдэх талбар",
 };
 
+// viewportFit "cover" lets env(safe-area-inset-bottom) work on iPhone,
+// so the bottom tab bar clears the home indicator.
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({ children }) {
   return (
     <html

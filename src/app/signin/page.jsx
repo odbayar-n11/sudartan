@@ -23,7 +23,6 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
-  const [demoLoading, setDemoLoading] = useState(false)
   const router = useRouter()
 
   const handleSignIn = async (e) => {
@@ -32,12 +31,20 @@ export default function SignIn() {
     setErrorMsg('')
 
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     })
 
     if (error) {
-      setErrorMsg(error.message)
+      if (error.message === 'Email not confirmed') {
+        setErrorMsg(
+          'И-мэйлээ баталгаажуулаагүй байна. Бүртгэл үүсгэх хуудаснаас кодоо оруулна уу.'
+        )
+      } else if (error.message === 'Invalid login credentials') {
+        setErrorMsg('И-мэйл эсвэл нууц үг буруу байна.')
+      } else {
+        setErrorMsg(error.message)
+      }
     } else {
       router.push('/myclass')
     }
@@ -45,21 +52,8 @@ export default function SignIn() {
     setLoading(false)
   }
 
-  // Demo login: signs the visitor in as a temporary guest (Supabase anonymous sign-in),
-  // so they can try the app without an account. Needs "Anonymous sign-ins" enabled in Supabase.
-  const handleDemo = async () => {
-    setDemoLoading(true)
-    setErrorMsg('')
-
-    const { error } = await supabase.auth.signInAnonymously()
-
-    if (error) {
-      setErrorMsg(error.message)
-      setDemoLoading(false)
-    } else {
-      router.push('/myclass')
-    }
-  }
+  const inputClass =
+    'w-full px-4 py-3 rounded-2xl border border-[#bae6fd] bg-[#f0f9ff] text-[#0f172a] placeholder:text-[#94a3b8] outline-none focus:border-[#0284c7] focus:ring-2 focus:ring-[#bae6fd] transition-all duration-200'
 
   return (
     <div
@@ -114,7 +108,7 @@ export default function SignIn() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-2xl border border-[#bae6fd] bg-[#f0f9ff] text-[#0f172a] placeholder:text-[#94a3b8] outline-none focus:border-[#0284c7] focus:ring-2 focus:ring-[#bae6fd] transition-all duration-200"
+              className={inputClass}
               placeholder="tanii@imeil.mn"
             />
           </div>
@@ -128,32 +122,17 @@ export default function SignIn() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-2xl border border-[#bae6fd] bg-[#f0f9ff] text-[#0f172a] placeholder:text-[#94a3b8] outline-none focus:border-[#0284c7] focus:ring-2 focus:ring-[#bae6fd] transition-all duration-200"
+              className={inputClass}
               placeholder="••••••••"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading || demoLoading}
+            disabled={loading}
             className="w-full py-3.5 bg-[#0284c7] hover:bg-[#0369a1] disabled:bg-[#7dd3fc] text-white font-extrabold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 mt-2"
           >
             {loading ? 'Нэвтэрч байна...' : 'Нэвтрэх'}
-          </button>
-
-          <div className="flex items-center gap-3 text-xs font-semibold text-[#94a3b8]">
-            <span className="h-px flex-1 bg-[#e2e8f0]" />
-            эсвэл
-            <span className="h-px flex-1 bg-[#e2e8f0]" />
-          </div>
-
-          <button
-            type="button"
-            onClick={handleDemo}
-            disabled={demoLoading || loading}
-            className="w-full py-3.5 bg-white hover:bg-[#f0f9ff] disabled:opacity-60 text-[#0284c7] font-extrabold rounded-full border-2 border-[#bae6fd] hover:border-[#0284c7] transition-all duration-300"
-          >
-            {demoLoading ? 'Нэвтэрч байна...' : 'Демо хувилбараар туршиж үзэх'}
           </button>
 
           <p className="text-sm text-center text-[#64748b] pt-2">

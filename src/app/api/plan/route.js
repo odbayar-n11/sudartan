@@ -10,6 +10,9 @@ const MODEL = "claude-sonnet-5-5"; // cheaper and faster: "claude-haiku-5-5"
 const MAX_SCORE = 800; // the highest possible score in your app
 const COOLDOWN_MINUTES = 10; // how often one user may generate a new plan
 
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
+const GEMINI_FALLBACK_MODEL = "gemini-3.1-flash-lite";
+const PROVIDER_TIMEOUT_MS = 15_000;
 
 const TYPES = ["ancient", "grammar", "idioms", "script", "literary", "quiz"];
 
@@ -94,61 +97,48 @@ function parsePlan(text) {
   return plan;
 }
 
-// Gemini (Google AI Studio key). Retries on temporary errors (overload, rate limit).
-const RETRY_STATUSES = [429, 500, 502, 503, 504];
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-async function generateWithGemini(userText) {
-  const MAX_ATTEMPTS = 3;
-
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": process.env.GEMINI_API_KEY,
+async function generateWithGemini(userText, model) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+    {
+      method: "POST",
+      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": process.env.GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM }] },
+        contents: [{ role: "user", parts: [{ text: userText }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          maxOutputTokens: 8192,
         },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM }] },
-          contents: [{ role: "user", parts: [{ text: userText }] }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            maxOutputTokens: 8192,
-          },
-        }),
-      }
-    );
-
-    if (res.ok) {
-      const json = await res.json();
-      const candidate = json?.candidates?.[0];
-      if (candidate?.finishReason === "MAX_TOKENS") {
-        throw new Error("Gemini хариу дундаа тасарлаа (MAX_TOKENS).");
-      }
-      const parts = candidate?.content?.parts || [];
-      return parts.map((p) => p.text || "").join("");
+      }),
     }
+  );
 
-    const errText = await res.text();
-    const retryable = RETRY_STATUSES.includes(res.status);
-    if (retryable && attempt < MAX_ATTEMPTS) {
-      console.warn(`Gemini ${res.status}, retry ${attempt}/${MAX_ATTEMPTS - 1}...`);
-      await sleep(attempt * 2000); // 2s, then 4s
-      continue;
+  if (res.ok) {
+    const json = await res.json();
+    const candidate = json?.candidates?.[0];
+    if (candidate?.finishReason === "MAX_TOKENS") {
+      throw new Error("Gemini хариу дундаа тасарлаа (MAX_TOKENS).");
     }
-    // Real reason shows in the terminal running `npm run dev`
-    throw new Error(`Gemini ${res.status}: ${errText}`);
+    const parts = candidate?.content?.parts || [];
+    return parts.map((p) => p.text || "").join("");
   }
+
+  const error = new Error(`Gemini ${model} returned HTTP ${res.status}`);
+  error.status = res.status;
+  throw error;
 }
 
 // Claude (Anthropic API key)
 async function generateWithClaude(userText) {
-  const anthropic = new Anthropic(); // reads ANTHROPIC_API_KEY automatically
+  const anthropic = new Anthropic({ timeout: PROVIDER_TIMEOUT_MS, maxRetries: 0 });
   const message = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 3000,
+    max_tokens: 4096, // Cyrillic uses many tokens, so keep this generous
     system: SYSTEM,
     messages: [{ role: "user", content: userText }],
   });
@@ -163,15 +153,21 @@ async function generateWithClaude(userText) {
 
 async function generateText(userText) {
   if (process.env.GEMINI_API_KEY) {
-    try {
-      return await generateWithGemini(userText);
-    } catch (err) {
-      if (process.env.ANTHROPIC_API_KEY) {
-        console.error("Gemini failed, falling back to Claude:", err.message);
-        return generateWithClaude(userText);
+    let geminiError;
+    for (const model of new Set([GEMINI_MODEL, GEMINI_FALLBACK_MODEL])) {
+      try {
+        return await generateWithGemini(userText, model);
+      } catch (err) {
+        geminiError = err;
+        console.warn(`Gemini ${model} failed:`, err.message);
+        const canTryAnotherModel =
+          [404, 429, 500, 502, 503, 504].includes(err.status) ||
+          err.name === "TimeoutError" ||
+          err.cause?.code === "UND_ERR_HEADERS_TIMEOUT";
+        if (!canTryAnotherModel) break;
       }
-      throw err;
     }
+    if (!process.env.ANTHROPIC_API_KEY) throw geminiError;
   }
   return generateWithClaude(userText);
 }
@@ -292,7 +288,7 @@ export async function POST(request) {
   } catch (err) {
     console.error(err);
     const msg = String(err?.message || "");
-    const overloaded = /\b(503|429|529)\b/.test(msg);
+    const overloaded = err?.name === "TimeoutError" || err?.name === "APIConnectionTimeoutError" || /\b(503|429|529)\b/.test(msg);
     const body = {
       error: overloaded
         ? "AI одоогоор ачаалалтай байна. Хэдэн минутын дараа дахин оролдоно уу."

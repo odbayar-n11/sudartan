@@ -11,6 +11,8 @@ import {
   ScrollText,
   BookOpen,
   PencilRuler,
+  Gamepad2,
+  Search,
 } from "lucide-react";
 
 // Topic pages that keep their sidebar item highlighted
@@ -24,6 +26,9 @@ export const mainNav = [
   { label: "Төлөвлөгөө", icon: CalendarDays, href: "/myclass/plan" },
   { label: "Алдсан", icon: AlertCircle, href: "/myclass/mistakes" },
   { label: "Хадгалсан", icon: Bookmark, href: "/myclass/saved" },
+  // `group` starts a new labelled section in the sidebar
+  { label: "Үг таах", icon: Gamepad2, href: "/ug-taah", group: "Тоглоом" },
+  { label: "Үг хайх", icon: Search, href: "/ug-haih" },
 ];
 
 // lesson counts are placeholders - replace with real data

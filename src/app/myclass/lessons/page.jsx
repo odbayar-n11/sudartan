@@ -11,6 +11,8 @@ const LESSONS = [
     icon: Pencil,
     tone: 'blue',
     href: '/grammar',
+    photo: '/images/lessons/grammar.jpg',
+    color: '#0957c3',
   },
   {
     title: 'Монгол бичиг',
@@ -19,6 +21,8 @@ const LESSONS = [
     icon: PenTool,
     tone: 'green',
     href: '/script',
+    photo: '/images/lessons/script.jpg',
+    color: '#668738',
   },
   {
     title: 'Уран дүрслэл',
@@ -27,6 +31,8 @@ const LESSONS = [
     icon: BookOpen,
     tone: 'violet',
     href: '/uran-durslel',
+    photo: '/images/lessons/literary.jpg',
+    color: '#daa20a',
   },
 ]
 

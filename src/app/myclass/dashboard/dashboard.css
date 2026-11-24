@@ -114,6 +114,25 @@
   font-size: 14px;
 }
 
+/* faint, inactive section label in the sidebar (e.g. Тоглоом) */
+.app .nav-group {
+  margin: 14px 14px 4px;
+  padding-top: 12px;
+  border-top: 1.5px solid rgba(11, 47, 74, 0.12);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sidetxt);
+  opacity: 0.45;
+  filter: blur(0.4px);
+  user-select: none;
+  pointer-events: none;
+}
+.app .nav-group--sheet {
+  margin: 8px 12px 2px;
+}
+
 .app .nav-link {
   display: flex;
   align-items: center;

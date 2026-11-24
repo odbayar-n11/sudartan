@@ -11,6 +11,8 @@ const EXERCISES = [
     icon: Mic,
     tone: 'teal',
     href: '/vg',
+    photo: '/images/exercises/vg.jpg',
+    color: '#2e3093',
   },
   {
     title: 'Хэлц үг',
@@ -19,6 +21,8 @@ const EXERCISES = [
     icon: MessageCircle,
     tone: 'pink',
     href: '/idioms',
+    photo: '/images/exercises/idioms.jpg',
+    color: '#63ba50',
   },
   {
     title: 'Эртний үг',
@@ -27,6 +31,8 @@ const EXERCISES = [
     icon: ScrollText,
     tone: 'amber',
     href: '/ancient',
+    photo: '/images/exercises/ancient.jpg',
+    color: '#f8f1e4',
   },
 ]
 

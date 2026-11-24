@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Fragment } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Manrope, Nunito } from "next/font/google";
@@ -189,7 +189,14 @@ export default function AppShell({ userName = "", children }) {
 
         <nav aria-label="Үндсэн цэс">
           {mainNav.map((i, index) => (
-            <NavLink key={i.href || index} item={i} />
+            <Fragment key={i.href || index}>
+              {i.group && (
+                <div className="nav-group" role="presentation">
+                  {i.group}
+                </div>
+              )}
+              <NavLink item={i} />
+            </Fragment>
           ))}
         </nav>
 
@@ -281,8 +288,13 @@ export default function AppShell({ userName = "", children }) {
             {moreNav.map((item, index) => {
               const Icon = item.icon;
               return (
+                <Fragment key={item.href || index}>
+                {item.group && (
+                  <div className="nav-group nav-group--sheet" role="presentation">
+                    {item.group}
+                  </div>
+                )}
                 <Link
-                  key={item.href || index}
                   href={item.href || "/"}
                   className="um-item"
                   role="menuitem"
@@ -293,6 +305,7 @@ export default function AppShell({ userName = "", children }) {
                   </span>
                   {item.label}
                 </Link>
+                </Fragment>
               );
             })}
 

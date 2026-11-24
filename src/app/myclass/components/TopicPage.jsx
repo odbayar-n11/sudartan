@@ -1,11 +1,25 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Layers, Sparkles, Clock } from 'lucide-react'
+import { ArrowUpRight, Clock } from 'lucide-react'
 import AppShell from './AppShell'
 
-// Shared card grid for the Хичээл and Дасгал pages.
-// items: [{ title, desc, count, icon, tone, href, isNew }]; unit is the word after the count.
+// Shared card grid for the Хичээл and Дасгал pages: tall, bold colour-block cards.
+// items: [{ title, desc, count, href, photo, color }]; unit is the word after the count.
+
+// Fallback colours if an item has none
+const PALETTE = ['#f6d36b', '#f26a4b', '#f7a8d0', '#9ad8b4', '#8ec5f5', '#c9b6f2']
+
+// White text on dark card colours, near-black text on light ones
+function textOn(hex) {
+  const n = parseInt(hex.slice(1), 16)
+  const lin = (c) => {
+    c /= 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  }
+  const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255)
+  return L < 0.3 ? '#ffffff' : '#141414'
+}
 
 const css = `
 .ls-title {
@@ -16,7 +30,7 @@ const css = `
   font-size: 34px !important;
   font-weight: 900 !important;
   line-height: 1.2 !important;
-  margin-bottom: 28px !important; /* Энд дурын зайгаа өгч болно (жишээ нь: 60px, 80px) */
+  margin-bottom: 24px !important;
 }
 .ls-title-ic {
   display: grid;
@@ -38,62 +52,51 @@ const css = `
   animation: ls-rise .6s .1s cubic-bezier(.2, .7, .2, 1) backwards;
 }
 
-.ls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.tp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:20px}
 
-/* sheep peeking over the top edge of each card, paws on the edge */
-.ls-wrap{position:relative;display:flex;flex-direction:column;padding-top:58px}
-.ls-wrap>.ls-card{flex:1}
-.ls-peek{position:absolute;top:0;right:30px;z-index:2;width:96px;height:auto;pointer-events:none;user-select:none;animation:ls-peek .6s cubic-bezier(.3,1.4,.5,1) backwards;animation-delay:calc(var(--i,0)*80ms + .45s);transition:transform .25s ease}
-.ls-wrap:has(a.ls-card:hover) .ls-peek{transform:translateY(-10px)}
-.ls-wrap:has(a.ls-card:active) .ls-peek{transform:translateY(-4px)}
-@keyframes ls-peek{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
-
-.ls-card{
-  --tone:#0284c7;--tone-bg:rgba(2,132,199,.18);
-  position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:220px;padding:24px;border-radius:28px;
-  border:1px solid rgba(128,128,128,.22);background:rgba(128,128,128,.1);color:inherit;text-decoration:none;
-  animation:ls-rise .6s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0)*80ms + .15s);
-  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease
+.tp-card{
+  position:relative;display:flex;flex-direction:column;
+  overflow:hidden;
+  padding:22px 22px 20px;border-radius:24px;
+  background:var(--bg);color:var(--fg);text-decoration:none;
+  box-shadow:0 10px 26px rgba(15,23,42,.08),inset 0 0 0 1px rgba(15,23,42,.05);
+  animation:ls-rise .6s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0)*90ms + .15s);
+  transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s ease
 }
-.ls-blue{--tone:#0284c7;--tone-bg:rgba(2,132,199,.18)}
-.ls-teal{--tone:#0e9488;--tone-bg:rgba(14,148,136,.18)}
-.ls-pink{--tone:#d6336c;--tone-bg:rgba(214,51,108,.16)}
-.ls-green{--tone:#16a34a;--tone-bg:rgba(22,163,74,.18)}
-.ls-amber{--tone:#d9730d;--tone-bg:rgba(217,115,13,.18)}
-.ls-violet{--tone:#7c4dcc;--tone-bg:rgba(124,77,204,.18)}
+a.tp-card:hover{transform:translateY(-6px) rotate(-.4deg);box-shadow:0 22px 44px color-mix(in srgb,var(--bg) 55%,transparent)}
+a.tp-card:active{transform:translateY(-2px) scale(.99)}
+a.tp-card:focus-visible{outline:3px solid #0284c7;outline-offset:4px}
+.tp-card.off{cursor:not-allowed;opacity:.6}
 
-/* big faint icon in the corner */
-.ls-ghost{position:absolute;right:-18px;bottom:-22px;color:var(--tone);opacity:.08;pointer-events:none;transition:transform .5s cubic-bezier(.2,.7,.2,1),opacity .3s}
-a.ls-card:hover .ls-ghost{transform:rotate(-10deg) scale(1.15);opacity:.14}
+.tp-top{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:800}
+.tp-brand{display:inline-flex;align-items:center;gap:7px}
+.tp-brand img{width:22px;height:22px;object-fit:contain}
+.tp-num{font-variant-numeric:tabular-nums;opacity:.7}
 
-a.ls-card:hover{transform:translateY(-6px);border-color:var(--tone);box-shadow:0 16px 36px color-mix(in srgb,var(--tone) 28%,transparent)}
-a.ls-card:active{transform:translateY(-2px) scale(.99)}
-a.ls-card:focus-visible{outline:3px solid var(--tone);outline-offset:3px}
-.ls-card.off{opacity:.55;cursor:not-allowed}
+/* picture runs edge to edge and fades into the card colour at top and bottom */
+.tp-art{height:clamp(150px,22vh,200px);margin:12px -22px 14px;background-size:cover;background-position:50% 4%;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 22%,#000 72%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 22%,#000 72%,transparent 100%)}
 
-.ls-ic{position:relative;width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:var(--tone-bg);color:var(--tone);margin-bottom:20px;transition:transform .3s cubic-bezier(.3,1.6,.5,1),background .25s,color .25s}
-a.ls-card:hover .ls-ic{transform:rotate(-8deg) scale(1.1);background:var(--tone);color:#fff}
-.ls-name{position:relative;font-size:18px;font-weight:800;margin:0 0 8px}
-.ls-desc{position:relative;margin:0 0 auto;padding-bottom:18px;font-size:14px;line-height:1.5;opacity:.7}
+.tp-name{margin:0;font-size:clamp(26px,2.4vw,32px);font-weight:900;line-height:1.08;letter-spacing:-.02em}
+.tp-rule{height:0;border:0;border-top:1.5px solid currentColor;opacity:.55;margin:16px 0}
+.tp-desc{margin:0;font-size:14px;line-height:1.5;font-weight:600;opacity:.82;min-height:calc(1.5em * 2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-.ls-foot{position:relative;display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:14px}
-.ls-count{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:var(--tone-bg);color:var(--tone)}
-.ls-soon{display:inline-flex;align-items:center;gap:6px;opacity:.7}
-.ls-go{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--tone-bg);color:var(--tone);transition:background .25s,color .25s}
-.ls-go svg{transition:transform .2s}
-a.ls-card:hover .ls-go{background:var(--tone);color:#fff}
-a.ls-card:hover .ls-go svg{transform:translateX(3px)}
-
-.ls-badge{position:absolute;top:16px;right:18px;display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;background:var(--tone);color:#fff;font-size:12px;font-weight:800;animation:ls-pop .6s .8s cubic-bezier(.3,1.6,.5,1) backwards}
-a.ls-card:hover .ls-badge svg{animation:ls-twinkle .6s ease}
+.tp-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:auto}
+.tp-count{display:flex;flex-direction:column;line-height:1}
+.tp-count b{font-size:clamp(34px,3.2vw,44px);font-weight:900;letter-spacing:-.03em}
+.tp-count span{margin-top:6px;font-size:13px;font-weight:700;opacity:.8}
+.tp-soon{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:14px}
+.tp-arrow{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:1.5px solid currentColor;transition:background .25s,color .25s,transform .3s cubic-bezier(.3,1.6,.5,1)}
+a.tp-card:hover .tp-arrow{background:var(--fg);color:var(--bg);border-color:var(--fg);transform:rotate(45deg)}
 
 @keyframes ls-rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 @keyframes ls-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
-@keyframes ls-twinkle{0%{transform:scale(1) rotate(0)}50%{transform:scale(1.4) rotate(20deg)}100%{transform:scale(1) rotate(0)}}
 
+@media (max-width:700px){
+  .tp-art{height:170px}
+}
 @media (prefers-reduced-motion:reduce){
-  .ls-card,.ls-title-ic,.ls-sub,.ls-badge,.ls-badge svg,.ls-peek{animation:none!important}
-  .ls-card,.ls-ic,.ls-go,.ls-go svg,.ls-ghost,.ls-peek{transition:none!important}
+  .tp-card,.ls-title-ic,.ls-sub{animation:none!important}
+  .tp-card,.tp-arrow{transition:none!important}
 }
 `
 
@@ -110,58 +113,59 @@ export default function TopicPage({ title, icon: TitleIcon, items, unit }) {
         <span className="ls-sub">Сэдвээ сонгоод суралцаж эхлээрэй</span>
       </h1>
 
-      <div className="ls-grid">
+      <div className="tp-grid">
         {items.map((l, idx) => {
-          const Icon = l.icon
           const inner = (
             <>
-              <Icon className="ls-ghost" size={150} strokeWidth={1.5} aria-hidden />
-              {l.isNew && (
-                <span className="ls-badge">
-                  <Sparkles size={12} aria-hidden />
-                  Шинэ
+              <div className="tp-top">
+                <span className="tp-brand">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/logo.png" alt="" aria-hidden />
+                  Судартан
                 </span>
-              )}
-              <div className="ls-ic">
-                <Icon size={26} aria-hidden />
+                <span className="tp-num">{String(idx + 1).padStart(2, '0')}</span>
               </div>
-              <h3 className="ls-name">{l.title}</h3>
-              <p className="ls-desc">{l.desc}</p>
-              <div className="ls-foot">
+
+              <div
+                className="tp-art"
+                style={l.photo ? { backgroundImage: `url(${l.photo})` } : undefined}
+                aria-hidden
+              />
+
+              <h3 className="tp-name">{l.title}</h3>
+              <hr className="tp-rule" />
+              <p className="tp-desc">{l.desc}</p>
+              <hr className="tp-rule" />
+
+              <div className="tp-foot">
                 {l.href ? (
-                  <span className="ls-count">
-                    <Layers size={15} aria-hidden />
-                    {l.count} {unit}
+                  <span className="tp-count">
+                    <b>{l.count}</b>
+                    <span>{unit}</span>
                   </span>
                 ) : (
-                  <span className="ls-soon">
+                  <span className="tp-soon">
                     <Clock size={15} aria-hidden />
                     Тун удахгүй
                   </span>
                 )}
                 {l.href && (
-                  <span className="ls-go">
-                    <ArrowRight size={18} aria-hidden />
+                  <span className="tp-arrow">
+                    <ArrowUpRight size={20} aria-hidden />
                   </span>
                 )}
               </div>
             </>
           )
-          const cls = `ls-card ls-${l.tone}`
-          const style = { '--i': idx }
-          return (
-            <div key={l.title} className="ls-wrap" style={style}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="ls-peek" src="/images/sheep/peek.png" alt="" aria-hidden />
-              {l.href ? (
-                <Link href={l.href} className={cls}>
-                  {inner}
-                </Link>
-              ) : (
-                <div className={`${cls} off`} aria-disabled="true">
-                  {inner}
-                </div>
-              )}
+          const bg = l.color || PALETTE[idx % PALETTE.length]
+          const style = { '--i': idx, '--bg': bg, '--fg': textOn(bg) }
+          return l.href ? (
+            <Link key={l.title} href={l.href} className="tp-card" style={style}>
+              {inner}
+            </Link>
+          ) : (
+            <div key={l.title} className="tp-card off" style={style} aria-disabled="true">
+              {inner}
             </div>
           )
         })}

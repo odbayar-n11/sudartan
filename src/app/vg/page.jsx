@@ -2,16 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  ArrowRight,
-  FileText,
-  Layers,
-  Mic,
-  Play,
-  Loader2,
-  TriangleAlert,
-} from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Loader2, TriangleAlert } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import AppShell from '../myclass/components/AppShell';
 
@@ -23,6 +14,24 @@ const chunkArray = (array, chunkSize) => {
   }
   return chunks;
 };
+
+// One card colour for every set (the blue from the Зөв бичих дүрэм picture)
+const CARD_COLOR = '#0957c3';
+
+// White text on dark card colours, near-black text on light ones
+function textOn(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const lin = (c) => {
+    c /= 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  return L < 0.3 ? '#ffffff' : '#141414';
+}
+
+// Questions the lesson really asks (rows whose two spellings differ)
+const playable = (set) =>
+  set.filter((r) => r.correct_version && r.wrong_version && r.correct_version.trim() !== r.wrong_version.trim()).length;
 
 const css = `
 .sx{--tone:#0e9488;--tone-bg:rgba(14,148,136,.16)}
@@ -62,6 +71,22 @@ const css = `
 
 .st-state{display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;animation:st-rise .5s backwards}
 .st-spin{animation:st-spin 1s linear infinite}
+
+/* set cards: colour blocks matching the Хичээл / Дасгал pages */
+.vs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr));gap:16px}
+.vs-card{position:relative;display:flex;flex-direction:column;min-height:230px;padding:18px 18px 16px;border-radius:22px;background:var(--bg);color:var(--fg);text-decoration:none;box-shadow:0 8px 22px rgba(15,23,42,.08),inset 0 0 0 1px rgba(15,23,42,.05);animation:st-rise .55s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0)*45ms + .05s);transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s ease}
+.vs-card:hover{transform:translateY(-5px);box-shadow:0 18px 36px color-mix(in srgb,var(--bg) 50%,transparent)}
+.vs-card:active{transform:translateY(-1px) scale(.99)}
+.vs-card:focus-visible{outline:3px solid #0284c7;outline-offset:4px}
+.vs-top{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:800}
+.vs-label{opacity:.8;text-transform:uppercase;letter-spacing:.08em}
+.vs-badge{padding:4px 10px;border-radius:999px;border:1.5px solid currentColor;opacity:.9}
+.vs-num{margin:14px 0 8px;font-size:56px;font-weight:900;line-height:.95;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.vs-words{margin:0;font-size:14px;font-weight:600;line-height:1.45;opacity:.85;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:calc(1.45em * 2)}
+.vs-rule{height:0;border:0;border-top:1.5px solid currentColor;opacity:.45;margin:14px 0 12px}
+.vs-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;font-weight:800;font-size:15px}
+.vs-arrow{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1.5px solid currentColor;transition:background .25s,color .25s,transform .3s cubic-bezier(.3,1.6,.5,1)}
+.vs-card:hover .vs-arrow{background:var(--fg);color:var(--bg);border-color:var(--fg);transform:rotate(45deg)}
 
 @keyframes st-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 @keyframes st-pop{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
@@ -112,20 +137,12 @@ export default function QuizSetsPage() {
         {/* Header Banner */}
         <div className="top">
           <div>
-            <h1 className="st-h1">
-              <span className="st-hico">
-                <Mic size={24} aria-hidden />
-              </span>
-              Дасгалын багцууд
-            </h1>
+            <h1 className="st-h1">Дасгалын багцууд</h1>
             <p className="lead">Өөрийн түвшинд тохирсон дасгалыг сонгон хийгээрэй</p>
           </div>
         </div>
 
-        <h2 className="st-sec-h">
-          <FileText size={22} aria-hidden />
-          Боломжит дасгалууд
-        </h2>
+        <h2 className="st-sec-h">Боломжит дасгалууд</h2>
 
         {error && (
           <div className="panel st-state" style={{ color: '#ef4444', fontWeight: 700 }}>
@@ -142,27 +159,23 @@ export default function QuizSetsPage() {
             </span>
           </div>
         ) : (
-          <div className="an-grid">
+          <div className="vs-grid">
             {quizSets.map((set, index) => {
               const setNumber = index + 1;
+              const bg = CARD_COLOR;
               return (
-                <div key={index} className="an-card" style={{ '--i': Math.min(index, 8) }}>
-                  <FileText
-                    className="an-ghost"
-                    size={150}
-                    strokeWidth={1.5}
-                    aria-hidden
-                  />
-                  <span className="an-badge">
-                    <Layers size={12} aria-hidden />
-                    {set.length} асуулт
-                  </span>
-
-                  <div className="an-ic">
-                    <FileText size={26} aria-hidden />
+                <Link
+                  key={index}
+                  href={`/quiz?set=${setNumber}`}
+                  className="vs-card"
+                  style={{ '--i': Math.min(index, 12), '--bg': bg, '--fg': textOn(bg) }}
+                >
+                  <div className="vs-top">
+                    <span className="vs-label">Дасгал</span>
+                    <span className="vs-badge">{playable(set)} асуулт</span>
                   </div>
-                  <h3 className="an-name">Дасгал #{setNumber}</h3>
-                  <p className="an-words">
+                  <div className="vs-num">{String(setNumber).padStart(2, '0')}</div>
+                  <p className="vs-words">
                     {set
                       .slice(0, 3)
                       .map((w) => w.correct_version)
@@ -170,13 +183,14 @@ export default function QuizSetsPage() {
                       .join(', ')}
                     {set.length > 3 ? '...' : ''}
                   </p>
-
-                  <Link href={`/quiz?set=${setNumber}`} className="an-start">
-                    <Play size={16} aria-hidden />
+                  <hr className="vs-rule" />
+                  <div className="vs-foot">
                     Эхлэх
-                    <ArrowRight className="an-ar" size={16} aria-hidden />
-                  </Link>
-                </div>
+                    <span className="vs-arrow">
+                      <ArrowUpRight size={18} aria-hidden />
+                    </span>
+                  </div>
+                </Link>
               );
             })}
           </div>
